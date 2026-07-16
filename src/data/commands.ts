@@ -9,6 +9,8 @@ import { openAbout } from "@/apps/about";
 import { openContact } from "@/apps/contact";
 import { openProjects } from "@/apps/projects";
 import { openProjectWindow } from "@/apps/project-window";
+import { openLiffy } from "@/apps/liffy";
+import { openResume } from "@/apps/resume";
 import { PROJECTS } from "@/data/projects";
 
 export function buildCommands(): Command[] {
@@ -25,6 +27,7 @@ export function buildCommands(): Command[] {
   commands.push(
     { name: "help", summary: "list available commands", run: printHelp },
     { name: "about", summary: "who is lucenity", run: openAbout },
+    { name: "resume", summary: "view my résumé", run: openResume },
     { name: "projects", summary: "browse my work", run: openProjects },
     {
       name: "project",
@@ -44,6 +47,11 @@ export function buildCommands(): Command[] {
       },
     },
     { name: "contact", summary: "how to reach me", run: openContact },
+    {
+      name: "liffy",
+      summary: "chat with liffy, my lil assistant",
+      run: openLiffy,
+    },
     {
       name: "clear",
       summary: "clear the screen",

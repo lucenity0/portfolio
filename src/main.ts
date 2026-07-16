@@ -8,6 +8,7 @@ import "@/styles/base.css";
 import "@/styles/terminal.css";
 import "@/styles/window.css";
 import "@/styles/apps.css";
+import "@/styles/liffy.css";
 
 import { CommandRegistry } from "@/core/command-registry";
 import { DesktopWindowManager } from "@/core/window-manager";

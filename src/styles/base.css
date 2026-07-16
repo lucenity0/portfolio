@@ -9,6 +9,11 @@
   box-sizing: border-box;
 }
 
+/* The [hidden] attribute must win over any display value we set. */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   height: 100%;

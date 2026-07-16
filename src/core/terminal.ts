@@ -234,7 +234,8 @@ export class Terminal implements ITerminal {
     this.historyIndex = this.history.length;
 
     const parts = line.split(/\s+/);
-    const name = parts[0] ?? "";
+    // Accept an optional leading slash, so `/liffy` works like `liffy`.
+    const name = (parts[0] ?? "").replace(/^\//, "");
     const args = parts.slice(1);
     const cmd = this.registry.get(name);
 

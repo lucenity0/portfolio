@@ -1,8 +1,8 @@
 /* ------------------------------------------------------------------ *
  * window — builds the DOM for a single retro window "panel": title bar
- * (drag handle) with control dots, a title, a close button, and a body
- * slot apps render into. Pure view construction; behaviour (drag,
- * focus, z-index) is wired by the window-manager.
+ * (drag handle) with control dots, a title, minimize/close controls, a
+ * body slot apps render into, and resize handles. Pure view; behaviour
+ * (drag, focus, resize, minimize) is wired by the window-manager.
  * ------------------------------------------------------------------ */
 
 export interface WindowChrome {
@@ -14,7 +14,13 @@ export interface WindowChrome {
   bodyEl: HTMLElement;
   /** The close control. */
   closeBtn: HTMLElement;
+  /** The minimize control. */
+  minimizeBtn: HTMLElement;
+  /** Resize handles, each tagged with `data-dir` (e | s | se). */
+  resizeHandles: HTMLElement[];
 }
+
+const RESIZE_DIRS = ["e", "s", "se"] as const;
 
 export function createWindowChrome(title: string): WindowChrome {
   const el = document.createElement("section");
@@ -44,7 +50,13 @@ export function createWindowChrome(title: string): WindowChrome {
 
   const controls = document.createElement("span");
   controls.className = "window__controls";
-  // Placeholder for minimize/maximize (Phase 2). Kept minimal for v1.
+  const minimizeBtn = document.createElement("button");
+  minimizeBtn.className = "window__btn window__btn--min";
+  minimizeBtn.type = "button";
+  minimizeBtn.title = "minimize";
+  minimizeBtn.setAttribute("aria-label", "minimize window");
+  minimizeBtn.textContent = "–";
+  controls.append(minimizeBtn);
 
   bar.append(dots, titleEl, controls);
 
@@ -53,5 +65,13 @@ export function createWindowChrome(title: string): WindowChrome {
 
   el.append(bar, body);
 
-  return { el, barEl: bar, bodyEl: body, closeBtn: closeDot };
+  const resizeHandles = RESIZE_DIRS.map((dir) => {
+    const h = document.createElement("span");
+    h.className = `window__resize window__resize--${dir}`;
+    h.dataset.dir = dir;
+    el.append(h);
+    return h;
+  });
+
+  return { el, barEl: bar, bodyEl: body, closeBtn: closeDot, minimizeBtn, resizeHandles };
 }

@@ -1,0 +1,71 @@
+/* ------------------------------------------------------------------ *
+ * liffy — chat window styling. Fills its window body (padding zeroed by
+ * the app). Reads like a CLI transcript.
+ * ------------------------------------------------------------------ */
+
+.liffy {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.liffy__log {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  line-height: 1.55;
+}
+
+.liffy__line {
+  display: flex;
+  gap: var(--sp-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.liffy__who {
+  flex: 0 0 auto;
+  user-select: none;
+}
+.liffy__who--user {
+  color: var(--dim);
+}
+.liffy__who--bot {
+  color: var(--ink);
+}
+.liffy__text {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink);
+}
+.liffy__line:has(.liffy__who--user) .liffy__text {
+  color: var(--dim);
+}
+
+.liffy__inputrow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 2px solid var(--line);
+}
+.liffy__prompt {
+  color: var(--dim);
+  user-select: none;
+}
+.liffy__input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--ink);
+  font: inherit;
+  caret-color: var(--ink);
+  padding: 0;
+}
+.liffy__input:disabled {
+  opacity: 0.5;
+}

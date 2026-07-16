@@ -121,3 +121,90 @@
 .project__open:hover {
   border-color: var(--dim);
 }
+
+/* Documentation view (about / resume — rendered markdown). */
+.docs {
+  line-height: 1.65;
+  color: var(--ink);
+}
+.docs h1 {
+  font-size: clamp(20px, 4vw, 26px);
+  letter-spacing: 1px;
+  margin: 0 0 var(--sp-2);
+}
+.docs h2 {
+  font-size: var(--fs-md);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--dim);
+  margin: var(--sp-5) 0 var(--sp-2);
+  padding-bottom: var(--sp-1);
+  border-bottom: 1px solid var(--line);
+}
+.docs h3 {
+  font-size: var(--fs-md);
+  letter-spacing: 1px;
+  margin: var(--sp-4) 0 var(--sp-1);
+}
+.docs p {
+  margin: 0 0 var(--sp-3);
+}
+.docs ul,
+.docs ol {
+  margin: 0 0 var(--sp-3);
+  padding-left: 1.4em;
+}
+.docs li {
+  margin: 2px 0;
+}
+.docs a {
+  color: var(--ink);
+}
+.docs strong {
+  color: var(--ink);
+}
+.docs code {
+  background: #000;
+  border: 1px solid var(--line);
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+.docs .md-pre {
+  background: #060606;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-3);
+  overflow-x: auto;
+  margin: 0 0 var(--sp-3);
+}
+.docs .md-pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.docs blockquote {
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-1) 0 var(--sp-1) var(--sp-3);
+  border-left: 2px solid var(--line);
+  color: var(--dim);
+}
+.docs hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: var(--sp-4) 0;
+}
+.docs__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--sp-3);
+}
+.docs__download {
+  border: 2px solid var(--line);
+  padding: var(--sp-1) var(--sp-3);
+  color: var(--ink);
+  font-size: var(--fs-sm);
+}
+.docs__download:hover {
+  border-color: var(--dim);
+}

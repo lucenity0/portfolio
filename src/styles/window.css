@@ -97,10 +97,42 @@
   color: var(--ink);
 }
 
-/* Power-on animation (reduced-motion aware). */
+/* Resize handles (east / south / south-east corner). */
+.window__resize {
+  position: absolute;
+  z-index: 2;
+}
+.window__resize--e {
+  top: 10px;
+  bottom: 10px;
+  right: -2px;
+  width: 8px;
+  cursor: ew-resize;
+}
+.window__resize--s {
+  left: 10px;
+  right: 10px;
+  bottom: -2px;
+  height: 8px;
+  cursor: ns-resize;
+}
+.window__resize--se {
+  right: -2px;
+  bottom: -2px;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+}
+
+/* Power-on / fold animations (reduced-motion aware). */
 @media (prefers-reduced-motion: no-preference) {
   .window.is-opening {
     animation: window-on var(--dur-med) var(--ease-out);
+  }
+  .window.is-minimizing {
+    transform-origin: top right;
+    pointer-events: none;
+    animation: window-off var(--dur-med) var(--ease-out) forwards;
   }
 }
 @keyframes window-on {
@@ -112,4 +144,73 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+@keyframes window-off {
+  to {
+    opacity: 0;
+    transform: scale(0.04);
+  }
+}
+
+/* ---- Minimized-windows folder (top-right) ---------------------------- */
+.tray {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 990;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.tray__folder {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-xs);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 5px 9px;
+  cursor: pointer;
+}
+.tray__folder:hover,
+.tray__folder.is-open {
+  border-color: var(--dim);
+}
+.tray__glyph {
+  font-size: 13px;
+}
+.tray__count {
+  min-width: 12px;
+  text-align: center;
+}
+.tray__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  padding: 6px;
+  min-width: 170px;
+  max-width: 240px;
+}
+.tray__item {
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-xs);
+  padding: 6px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tray__item:hover {
+  border-color: var(--dim);
 }
