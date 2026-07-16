@@ -1,0 +1,123 @@
+/* ------------------------------------------------------------------ *
+ * apps — styling for the content that renders inside windows
+ * (about, contact, projects launcher, project embeds).
+ * ------------------------------------------------------------------ */
+
+/* Shared bits */
+.muted {
+  color: var(--dim);
+}
+.about h2,
+.contact h2 {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-xs);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.about p,
+.contact p {
+  margin: 0 0 var(--sp-3);
+}
+
+.contact__list {
+  list-style: none;
+  margin: 0 0 var(--sp-4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* Launcher list */
+.app-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.app-card {
+  position: relative;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-3);
+  background: transparent;
+  border: 2px solid var(--line);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.app-card:hover {
+  border-color: var(--dim);
+}
+.app-card strong {
+  letter-spacing: 1px;
+}
+.app-card span {
+  color: var(--dim);
+  font-size: var(--fs-sm);
+}
+.app-card__tag {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  font-size: var(--fs-xs);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  padding: 0 6px;
+}
+
+/* Project window (fills its window body; body padding is set to 0). */
+.project {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.project__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 2px solid var(--line);
+  font-size: var(--fs-xs);
+  color: var(--dim);
+  flex: 0 0 auto;
+}
+.project__dots {
+  letter-spacing: 2px;
+}
+.project__url {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid var(--line);
+  padding: 2px var(--sp-2);
+}
+.project__frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #000;
+}
+.project__fallback {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-5);
+  text-align: center;
+}
+.project__open {
+  margin-top: var(--sp-3);
+  border: 2px solid var(--line);
+  padding: var(--sp-2) var(--sp-4);
+  color: var(--ink);
+}
+.project__open:hover {
+  border-color: var(--dim);
+}

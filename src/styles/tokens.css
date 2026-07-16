@@ -1,0 +1,57 @@
+/* ------------------------------------------------------------------ *
+ * Design tokens — lifted from the under-construction page so the
+ * portfolio reads as a continuation of the same monochrome world.
+ * Single source of truth for colour, type, spacing, motion.
+ * ------------------------------------------------------------------ */
+:root {
+  /* Monochrome palette (pure greys) */
+  --bg: #0d0d0d;
+  --panel: #111111;
+  --panel-2: #0a0a0a;
+  --line: #262626;
+  --ink: #f4f4f4;
+  --dim: #9a9a9a;
+  --sub: #6a6a6a;
+  --shadow: #000000;
+
+  /* Accent — kept monochrome by default; a single hook for later theming. */
+  --accent: var(--ink);
+
+  /* Typography */
+  --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  --fs-xs: 11px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-lg: clamp(20px, 6vw, 40px);
+  --tracking: 0.02em;
+
+  /* Spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* Structure */
+  --radius: 10px;
+  --radius-lg: 16px;
+  --border-w: 2px;
+  --grid-size: 40px;
+
+  /* Elevation — terminal is the console "wallpaper"; windows float above. */
+  --z-desktop: 0;
+  --z-terminal: 10;
+  --z-window: 100;
+  --z-window-active: 500;
+  --z-overlay: 1000;
+
+  /* Motion — reference these so timing stays consistent (and easy to kill). */
+  --dur-fast: 120ms;
+  --dur-med: 260ms;
+  --dur-slow: 520ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.5, 0.1, 0.3, 1);
+  --caret-blink: 1s;
+}

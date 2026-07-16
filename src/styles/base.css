@@ -1,0 +1,144 @@
+/* ------------------------------------------------------------------ *
+ * Base — reset, page canvas, and the shared retro texture layer
+ * (grid + vignette + CRT scanlines) that every screen sits on top of.
+ * ------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: var(--fs-md);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden; /* the desktop owns scrolling; windows scroll internally */
+  image-rendering: pixelated;
+}
+
+/* Faint grid + vignette behind everything (ported from index.html). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  opacity: 0.35;
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 40%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(120% 90% at 50% 40%, #000 40%, transparent 100%);
+  pointer-events: none;
+  z-index: var(--z-desktop);
+}
+
+/* CRT scanlines + soft corner darkening, above content but non-interactive. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-overlay);
+  background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0 2px,
+      rgba(0, 0, 0, 0.16) 2px 3px
+    ),
+    radial-gradient(120% 120% at 50% 30%, transparent 60%, rgba(0, 0, 0, 0.45) 100%);
+  mix-blend-mode: multiply;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+}
+
+/* ---- Reusable pieces ---------------------------------------------- */
+
+/* Corner brackets — the little L-shaped frame accents from the WIP page. */
+.brackets {
+  position: relative;
+}
+.brackets::before,
+.brackets::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  border-color: var(--dim);
+  border-style: solid;
+}
+.brackets::before {
+  top: 6px;
+  left: 6px;
+  border-width: 2px 0 0 2px;
+}
+.brackets::after {
+  bottom: 6px;
+  right: 6px;
+  border-width: 0 2px 2px 0;
+}
+
+/* Blinking block caret. */
+.caret {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.05em;
+  background: var(--accent);
+  transform: translateY(0.14em);
+}
+
+a {
+  color: var(--dim);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+}
+a:hover {
+  color: var(--ink);
+  border-color: var(--dim);
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* Thin monochrome scrollbars inside windows/terminal. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--line);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .caret {
+    animation: caret var(--caret-blink) steps(1) infinite;
+  }
+}
+@keyframes caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
