@@ -29,6 +29,10 @@
   font-size: var(--fs-md);
   color: var(--ink);
   padding-right: var(--sp-2);
+  scrollbar-width: none; /* firefox */
+}
+.terminal__scroll::-webkit-scrollbar {
+  display: none; /* chrome/safari */
 }
 
 /* A single printed line of output/history. */
