@@ -71,3 +71,10 @@
 .liffy__input:disabled {
   opacity: 0.5;
 }
+
+/* Phones: ≥16px input so iOS doesn't auto-zoom the chat field. */
+@media (max-width: 600px) {
+  .liffy__inputrow {
+    font-size: 16px;
+  }
+}

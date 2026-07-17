@@ -157,6 +157,9 @@ export class Terminal implements ITerminal {
     // block caret), and the rest — so the caret tracks real edits.
     const ghost = document.createElement("span");
     ghost.className = "terminal__ghost";
+    // Purely visual mirror of the input — hide from screen readers so
+    // the typed value isn't announced twice.
+    ghost.setAttribute("aria-hidden", "true");
     const ghostBefore = document.createTextNode("");
     const caret = document.createElement("span");
     caret.className = "caret";

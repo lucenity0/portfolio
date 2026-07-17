@@ -55,14 +55,20 @@ export class DesktopWindowManager implements WindowManager {
     const { el, bodyEl, barEl, closeBtn, minimizeBtn, maximizeBtn, resizeHandles } =
       chrome;
 
-    el.style.width = `${opts.width ?? DEFAULTS.width}px`;
-    el.style.height = `${opts.height ?? DEFAULTS.height}px`;
+    // Clamp to the desktop so windows never spawn off-screen or wider
+    // than a phone viewport (near-fullscreen on small screens).
+    const maxW = Math.max(MIN_W, this.root.clientWidth - 16);
+    const maxH = Math.max(MIN_H, this.root.clientHeight - 16);
+    const w = Math.min(opts.width ?? DEFAULTS.width, maxW);
+    const h = Math.min(opts.height ?? DEFAULTS.height, maxH);
+    el.style.width = `${w}px`;
+    el.style.height = `${h}px`;
 
     const offset = (this.spawnCount++ % 6) * 26;
-    const x = opts.x ?? Math.max(24, this.root.clientWidth / 2 - 260 + offset);
-    const y = opts.y ?? Math.max(24, this.root.clientHeight / 2 - 200 + offset);
-    el.style.left = `${x}px`;
-    el.style.top = `${y}px`;
+    const x = opts.x ?? Math.max(8, this.root.clientWidth / 2 - w / 2 + offset);
+    const y = opts.y ?? Math.max(8, this.root.clientHeight / 2 - h / 2 + offset);
+    el.style.left = `${Math.min(x, Math.max(8, this.root.clientWidth - w - 8))}px`;
+    el.style.top = `${Math.min(y, Math.max(8, this.root.clientHeight - h - 8))}px`;
 
     if (typeof opts.content === "string") {
       bodyEl.textContent = opts.content;
@@ -96,6 +102,15 @@ export class DesktopWindowManager implements WindowManager {
       this.toggleMaximize(opts.id);
     });
     el.addEventListener("pointerdown", () => this.focus(opts.id));
+    // Esc closes the window when focus is inside it — except while typing
+    // in a text field (liffy's input etc.), where Esc should be inert.
+    el.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      const t = e.target as HTMLElement;
+      if (t.closest("input, textarea, select, [contenteditable]")) return;
+      e.stopPropagation();
+      this.close(opts.id);
+    });
     this.enableDrag(el, barEl);
     this.enableResize(opts.id, el, resizeHandles);
 

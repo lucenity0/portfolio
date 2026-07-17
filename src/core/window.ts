@@ -35,11 +35,12 @@ export function createWindowChrome(title: string): WindowChrome {
 
   const dots = document.createElement("span");
   dots.className = "window__dots";
-  const closeDot = document.createElement("span");
+  // A real <button> so it's keyboard-focusable and SR-operable.
+  const closeDot = document.createElement("button");
   closeDot.className = "window__dot window__dot--close";
+  closeDot.type = "button";
   closeDot.title = "close";
   closeDot.setAttribute("aria-label", "close window");
-  closeDot.setAttribute("role", "button");
   const dot2 = document.createElement("span");
   dot2.className = "window__dot";
   const dot3 = document.createElement("span");

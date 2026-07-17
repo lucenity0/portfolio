@@ -400,13 +400,29 @@
     transform: translateX(-50%);
   }
 }
-/* Short viewports: no centered hero; the cat appears once it corners. */
+/* Short viewports: no centered hero; the cat appears once it corners.
+   (Also kicks in when a phone's on-screen keyboard shrinks the view.) */
 @media (max-height: 560px) {
   .hero {
     display: none;
   }
   .catc--hero:not(.catc--corner) {
     display: none;
+  }
+}
+
+/* Narrow phones: smaller cat + greeting so nothing clips. */
+@media (max-width: 600px) {
+  .catc--hero .cat__art {
+    font-size: 5px;
+  }
+  .hero {
+    top: calc(14% + 104px);
+    width: 92vw;
+  }
+  .hero__title {
+    font-size: 11px;
+    text-align: center;
   }
 }
 

@@ -26,6 +26,8 @@ export class MinimizedTray {
     this.folderBtn.className = "tray__folder";
     this.folderBtn.type = "button";
     this.folderBtn.setAttribute("aria-label", "minimized windows");
+    this.folderBtn.setAttribute("aria-haspopup", "true");
+    this.folderBtn.setAttribute("aria-expanded", "false");
     this.folderBtn.innerHTML =
       '<span class="tray__glyph" aria-hidden="true">▚</span><span class="tray__count">0</span>';
     this.countEl = this.folderBtn.querySelector(".tray__count")!;
@@ -65,6 +67,7 @@ export class MinimizedTray {
     this.countEl.textContent = String(count);
     this.listEl.hidden = !this.open || count === 0;
     this.folderBtn.classList.toggle("is-open", this.open);
+    this.folderBtn.setAttribute("aria-expanded", String(this.open && count > 0));
 
     this.listEl.replaceChildren();
     for (const [id, item] of this.items) {

@@ -85,3 +85,18 @@
   font: inherit;
   padding: 0;
 }
+
+/* Small screens: tighter frame; the input row goes to 16px (ghost and
+   input together, so click-to-caret stays aligned) which also stops
+   iOS auto-zooming the focused field. */
+@media (max-width: 600px) {
+  .terminal {
+    padding: 10px;
+  }
+  .terminal__scroll {
+    font-size: var(--fs-sm);
+  }
+  .terminal__input-row {
+    font-size: 16px;
+  }
+}
