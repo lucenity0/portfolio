@@ -52,8 +52,10 @@ export interface Terminal {
 export interface CommandContext {
   terminal: Terminal;
   windows: WindowManager;
-  /** Tokenised arguments after the command name. */
+  /** Tokenised positional arguments after the command name (flags excluded). */
   args: string[];
+  /** Parsed `--flag` / `--flag=value` tokens; a bare `--flag` is `true`. */
+  flags: Record<string, string | boolean>;
   /** The full raw line the user typed. */
   raw: string;
 }

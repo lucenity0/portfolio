@@ -59,3 +59,24 @@ export function tokenize(line: string): string[] {
   if (inToken) tokens.push(current);
   return tokens;
 }
+
+/**
+ * Split already-tokenized args into positional args and `--flag`/
+ * `--flag=value` pairs. A bare `--flag` (no `=value`) is boolean `true`.
+ */
+export function parseFlags(tokens: string[]): {
+  args: string[];
+  flags: Record<string, string | boolean>;
+} {
+  const args: string[] = [];
+  const flags: Record<string, string | boolean> = {};
+  for (const t of tokens) {
+    const m = /^--([^=\s]+)(?:=(.*))?$/.exec(t);
+    if (m) {
+      flags[m[1]!] = m[2] !== undefined ? m[2] : true;
+    } else {
+      args.push(t);
+    }
+  }
+  return { args, flags };
+}

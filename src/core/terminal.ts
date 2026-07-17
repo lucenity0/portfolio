@@ -14,9 +14,11 @@ import type {
 } from "@/types";
 import type { CommandRegistry } from "@/core/command-registry";
 import { typewriter } from "@/core/fx";
-import { tokenize } from "@/core/parse-command";
+import { parseFlags, tokenize } from "@/core/parse-command";
 
 const PROMPT = "visitor@lucenity:~$";
+const HISTORY_KEY = "lucenity:history";
+const HISTORY_CAP = 200;
 
 const VARIANT_CLASS: Record<LineVariant, string> = {
   default: "terminal__line",
@@ -34,6 +36,71 @@ function longestCommonPrefix(words: string[]): string {
   return prefix;
 }
 
+/**
+ * Damerau-Levenshtein distance (optimal string alignment): like Levenshtein
+ * but an adjacent-character swap costs 1, not 2. Command-name typos are
+ * overwhelmingly transpositions ("hlep" → "help"), so this matters — plain
+ * Levenshtein would price those out of a tight typo budget.
+ */
+function editDistance(a: string, b: string, max: number): number {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  const d: number[][] = Array.from({ length: a.length + 1 }, () =>
+    new Array<number>(b.length + 1).fill(0),
+  );
+  for (let i = 0; i <= a.length; i++) d[i]![0] = i;
+  for (let j = 0; j <= b.length; j++) d[0]![j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      let v = Math.min(
+        d[i - 1]![j]! + 1,
+        d[i]![j - 1]! + 1,
+        d[i - 1]![j - 1]! + cost,
+      );
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        v = Math.min(v, d[i - 2]![j - 2]! + 1);
+      }
+      d[i]![j] = v;
+    }
+  }
+  return d[a.length]![b.length]!;
+}
+
+/** The closest known name to `word` within a small typo budget, or null. */
+function closestMatch(word: string, candidates: string[]): string | null {
+  if (word.length < 2) return null;
+  const budget = word.length >= 6 ? 2 : 1;
+  let best: { name: string; dist: number } | null = null;
+  for (const c of candidates) {
+    const d = editDistance(word, c, budget);
+    if (d <= budget && (!best || d < best.dist)) best = { name: c, dist: d };
+  }
+  return best?.name ?? null;
+}
+
+/** Read persisted command history from localStorage (empty on any failure). */
+function loadHistory(): string[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.filter((x): x is string => typeof x === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Persist command history (best-effort — private mode/quota can throw). */
+function saveHistory(history: string[]): void {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch {
+    // storage unavailable — history just won't survive a reload
+  }
+}
+
 export class Terminal implements ITerminal {
   private readonly scrollEl: HTMLElement;
   private readonly inputRow: HTMLElement;
@@ -42,7 +109,7 @@ export class Terminal implements ITerminal {
   private readonly registry: CommandRegistry;
   private readonly windows: WindowManager;
 
-  private readonly history: string[] = [];
+  private history: string[] = [];
   private historyIndex = 0;
   private busy = false;
 
@@ -102,6 +169,9 @@ export class Terminal implements ITerminal {
     this.inputRow = row;
     this.inputEl = input;
     this.ghostText = ghostText;
+
+    this.history = loadHistory();
+    this.historyIndex = this.history.length;
 
     // --- wiring ---
     input.addEventListener("input", () => this.renderGhost());
@@ -233,6 +303,18 @@ export class Terminal implements ITerminal {
     }
   }
 
+  /** Record a submitted line: de-dupe consecutive repeats, cap length, persist. */
+  private pushHistory(line: string): void {
+    if (this.history[this.history.length - 1] !== line) {
+      this.history.push(line);
+      if (this.history.length > HISTORY_CAP) {
+        this.history = this.history.slice(this.history.length - HISTORY_CAP);
+      }
+      saveHistory(this.history);
+    }
+    this.historyIndex = this.history.length;
+  }
+
   private recallHistory(dir: -1 | 1): void {
     if (this.history.length === 0) return;
     this.historyIndex = Math.min(
@@ -309,24 +391,32 @@ export class Terminal implements ITerminal {
     this.renderGhost();
     if (line === "") return;
 
-    this.history.push(line);
-    this.historyIndex = this.history.length;
+    this.pushHistory(line);
 
     const parts = tokenize(line);
     if (parts.length === 0) return;
     // Accept an optional leading slash, so `/liffy` works like `liffy`.
     const name = (parts[0] ?? "").replace(/^\//, "");
-    const args = parts.slice(1);
+    const { args, flags } = parseFlags(parts.slice(1));
     const cmd = this.registry.get(name);
 
     if (!cmd) {
-      this.print(`command not found: ${name} — type \`help\``, "dim");
+      const suggestion = closestMatch(
+        name,
+        this.registry.visible().map((c) => c.name),
+      );
+      this.print(
+        suggestion
+          ? `command not found: ${name} — did you mean \`${suggestion}\`?`
+          : `command not found: ${name} — type \`help\``,
+        "dim",
+      );
       return;
     }
 
     this.setBusy(true);
     try {
-      await cmd.run({ terminal: this, windows: this.windows, args, raw: line });
+      await cmd.run({ terminal: this, windows: this.windows, args, flags, raw: line });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       this.print(`error: ${msg}`, "dim");
