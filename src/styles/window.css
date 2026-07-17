@@ -124,28 +124,91 @@
   cursor: nwse-resize;
 }
 
-/* Power-on / fold animations (reduced-motion aware). */
+/* Maximized: fills the desktop; drag/resize disabled by the manager. */
+.window.is-maximized {
+  border-radius: var(--radius);
+}
+.window.is-maximized .window__bar {
+  cursor: default;
+}
+.window.is-maximized .window__resize {
+  display: none;
+}
+
+/* CRT power-on/off + fold animations (reduced-motion aware). */
 @media (prefers-reduced-motion: no-preference) {
   .window.is-opening {
-    animation: window-on var(--dur-med) var(--ease-out);
+    animation: window-crt-on var(--dur-slow) var(--ease-out);
+  }
+  .window.is-closing {
+    pointer-events: none;
+    animation: window-crt-off var(--dur-med) var(--ease-in-out) forwards;
   }
   .window.is-minimizing {
     transform-origin: top right;
     pointer-events: none;
-    animation: window-off var(--dur-med) var(--ease-out) forwards;
+    animation: window-fold var(--dur-med) var(--ease-out) forwards;
+  }
+  /* Applied only for the maximize/restore snap — never during drag. */
+  .window.is-snapping {
+    transition:
+      width var(--dur-med) var(--ease-out),
+      height var(--dur-med) var(--ease-out),
+      left var(--dur-med) var(--ease-out),
+      top var(--dur-med) var(--ease-out);
   }
 }
-@keyframes window-on {
+
+/* Power on: a thin over-bright scanline snaps open vertically, with a
+   flicker as the "tube" warms up. */
+@keyframes window-crt-on {
   0% {
     opacity: 0;
-    transform: translateY(6px) scale(0.98);
+    transform: scale(1.04, 0.005);
+    filter: brightness(3);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.02, 0.03);
+    filter: brightness(2.4);
+  }
+  55% {
+    transform: scale(1, 1.04);
+    filter: brightness(1.4);
+  }
+  70% {
+    transform: scale(1);
+    filter: brightness(0.9);
+  }
+  82% {
+    filter: brightness(1.15);
   }
   100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: scale(1);
+    filter: brightness(1);
   }
 }
-@keyframes window-off {
+
+/* Power off: collapse to a bright horizontal line, then to a dot. */
+@keyframes window-crt-off {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.02, 0.01);
+    filter: brightness(2.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.005, 0.01);
+    filter: brightness(3);
+  }
+}
+
+@keyframes window-fold {
   to {
     opacity: 0;
     transform: scale(0.04);

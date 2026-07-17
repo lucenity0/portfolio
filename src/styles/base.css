@@ -95,12 +95,20 @@ body::after {
   border-width: 0 2px 2px 0;
 }
 
-/* Blinking block caret. */
+/* Blinking block caret. When it sits mid-string it contains (and
+   inverts) the character under the cursor; empty at end-of-line it
+   keeps a fixed block width. */
 .caret {
   display: inline-block;
-  width: 0.6em;
-  height: 1.05em;
+  min-width: 0.6em;
   background: var(--accent);
+  color: var(--bg);
+  white-space: pre;
+}
+/* Empty block (cursor at end of line) needs explicit size + a nudge
+   to sit on the baseline; with a char inside it sizes naturally. */
+.caret:empty {
+  height: 1.05em;
   transform: translateY(0.14em);
 }
 

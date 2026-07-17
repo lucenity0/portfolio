@@ -21,7 +21,11 @@ interface WinRecord {
   instance: WindowInstance;
   el: HTMLElement;
   title: string;
+  /** The pre-maximize rect, present only while maximized. */
+  savedRect?: { left: string; top: string; width: string; height: string };
 }
+
+const MAX_MARGIN = 12; // gap around a maximized window
 
 export class DesktopWindowManager implements WindowManager {
   private readonly root: HTMLElement;
@@ -48,7 +52,8 @@ export class DesktopWindowManager implements WindowManager {
     }
 
     const chrome = createWindowChrome(opts.title);
-    const { el, bodyEl, barEl, closeBtn, minimizeBtn, resizeHandles } = chrome;
+    const { el, bodyEl, barEl, closeBtn, minimizeBtn, maximizeBtn, resizeHandles } =
+      chrome;
 
     el.style.width = `${opts.width ?? DEFAULTS.width}px`;
     el.style.height = `${opts.height ?? DEFAULTS.height}px`;
@@ -81,6 +86,15 @@ export class DesktopWindowManager implements WindowManager {
       e.stopPropagation();
       this.minimize(opts.id);
     });
+    maximizeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.toggleMaximize(opts.id);
+    });
+    // Double-click the title bar (not its buttons) toggles maximize.
+    barEl.addEventListener("dblclick", (e) => {
+      if ((e.target as HTMLElement).closest(".window__dot, .window__btn")) return;
+      this.toggleMaximize(opts.id);
+    });
     el.addEventListener("pointerdown", () => this.focus(opts.id));
     this.enableDrag(el, barEl);
     this.enableResize(opts.id, el, resizeHandles);
@@ -94,11 +108,62 @@ export class DesktopWindowManager implements WindowManager {
   close(id: string): void {
     const rec = this.records.get(id);
     if (!rec) return;
-    rec.el.remove();
+    // Book-keeping first, so the window is logically gone even while
+    // its power-off animation still plays.
     this.records.delete(id);
-    this.minimized.delete(id);
+    const wasMinimized = this.minimized.delete(id);
     this.mru = this.mru.filter((x) => x !== id);
     if (this.tray.has(id)) this.tray.remove(id);
+
+    if (prefersReducedMotion() || wasMinimized) {
+      rec.el.remove();
+      return;
+    }
+    rec.el.classList.add("is-closing");
+    rec.el.addEventListener("animationend", () => rec.el.remove(), {
+      once: true,
+    });
+    // Safety net: if the animation never fires (e.g. display:none), drop it.
+    window.setTimeout(() => rec.el.remove(), 600);
+  }
+
+  /** Fill the desktop, or restore the previous rect. */
+  toggleMaximize(id: string): void {
+    const rec = this.records.get(id);
+    if (!rec || this.minimized.has(id)) return;
+    if (!prefersReducedMotion()) {
+      rec.el.classList.add("is-snapping");
+      window.setTimeout(() => rec.el.classList.remove("is-snapping"), 300);
+    }
+    if (rec.savedRect) {
+      const r = rec.savedRect;
+      rec.el.style.left = r.left;
+      rec.el.style.top = r.top;
+      rec.el.style.width = r.width;
+      rec.el.style.height = r.height;
+      delete rec.savedRect;
+      rec.el.classList.remove("is-maximized");
+    } else {
+      rec.savedRect = {
+        left: rec.el.style.left,
+        top: rec.el.style.top,
+        width: rec.el.style.width,
+        height: rec.el.style.height,
+      };
+      rec.el.style.left = `${MAX_MARGIN}px`;
+      rec.el.style.top = `${MAX_MARGIN}px`;
+      rec.el.style.width = `${this.root.clientWidth - MAX_MARGIN * 2}px`;
+      rec.el.style.height = `${this.root.clientHeight - MAX_MARGIN * 2}px`;
+      rec.el.classList.add("is-maximized");
+    }
+    const btn = rec.el.querySelector<HTMLButtonElement>(".window__btn--max");
+    if (btn) {
+      const maxed = rec.el.classList.contains("is-maximized");
+      btn.textContent = maxed ? "❐" : "□";
+      btn.title = maxed ? "restore" : "maximize";
+      btn.setAttribute("aria-label", maxed ? "restore window" : "maximize window");
+    }
+    this.focus(id);
   }
 
   focus(id: string): void {
@@ -189,6 +254,7 @@ export class DesktopWindowManager implements WindowManager {
     handle.addEventListener("pointerdown", (e: PointerEvent) => {
       if ((e.target as HTMLElement).closest(".window__dot--close, .window__btn"))
         return;
+      if (el.classList.contains("is-maximized")) return;
       dragging = true;
       startX = e.clientX;
       startY = e.clientY;
@@ -210,6 +276,7 @@ export class DesktopWindowManager implements WindowManager {
       handle.addEventListener("pointerdown", (e: PointerEvent) => {
         e.preventDefault();
         e.stopPropagation();
+        if (el.classList.contains("is-maximized")) return;
         this.focus(id);
         const dir = handle.dataset.dir ?? "se";
         const startX = e.clientX;

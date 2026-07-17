@@ -105,7 +105,9 @@ export class Terminal implements ITerminal {
   private readonly scrollEl: HTMLElement;
   private readonly inputRow: HTMLElement;
   private readonly inputEl: HTMLInputElement;
-  private readonly ghostText: Text;
+  private readonly ghostBefore: Text;
+  private readonly caretText: Text;
+  private readonly ghostAfter: Text;
   private readonly registry: CommandRegistry;
   private readonly windows: WindowManager;
 
@@ -150,12 +152,18 @@ export class Terminal implements ITerminal {
     const field = document.createElement("span");
     field.className = "terminal__field";
 
+    // The ghost mirrors the input in three pieces — text before the
+    // cursor, the character *under* it (rendered inverted inside the
+    // block caret), and the rest — so the caret tracks real edits.
     const ghost = document.createElement("span");
     ghost.className = "terminal__ghost";
-    const ghostText = document.createTextNode("");
+    const ghostBefore = document.createTextNode("");
     const caret = document.createElement("span");
     caret.className = "caret";
-    ghost.append(ghostText, caret);
+    const caretText = document.createTextNode("");
+    caret.append(caretText);
+    const ghostAfter = document.createTextNode("");
+    ghost.append(ghostBefore, caret, ghostAfter);
 
     const input = document.createElement("input");
     input.className = "terminal__input";
@@ -175,13 +183,22 @@ export class Terminal implements ITerminal {
     this.scrollEl = scroll;
     this.inputRow = row;
     this.inputEl = input;
-    this.ghostText = ghostText;
+    this.ghostBefore = ghostBefore;
+    this.caretText = caretText;
+    this.ghostAfter = ghostAfter;
 
     this.history = loadHistory();
     this.historyIndex = this.history.length;
 
     // --- wiring ---
     input.addEventListener("input", () => this.renderGhost());
+    // Cursor moves without input changes (←/→, Home/End, clicks) still
+    // need a ghost repaint so the block caret follows the real cursor.
+    document.addEventListener("selectionchange", () => {
+      if (document.activeElement === this.inputEl) this.renderGhost();
+    });
+    input.addEventListener("keyup", () => this.renderGhost());
+    input.addEventListener("click", () => this.renderGhost());
     input.addEventListener("keydown", (e) => this.onKeydown(e));
     surface.addEventListener("click", () => {
       // Don't steal focus mid-selection of printed output.
@@ -238,10 +255,14 @@ export class Terminal implements ITerminal {
   // ---- extras used by the boot sequence ----
 
   /** Type a line character-by-character (reduced-motion aware). */
-  async typeLine(text: string, variant: LineVariant = "default"): Promise<void> {
+  async typeLine(
+    text: string,
+    variant: LineVariant = "default",
+    speed = 12,
+  ): Promise<void> {
     const el = this.makeLine(variant);
     this.insertLine(el);
-    await typewriter(el, text, { speed: 12 });
+    await typewriter(el, text, { speed });
     this.scrollToBottom();
   }
 
@@ -278,8 +299,12 @@ export class Terminal implements ITerminal {
   }
 
   private renderGhost(): void {
-    this.ghostText.textContent = this.inputEl.value;
-    this.onTyping?.(this.inputEl.value.length);
+    const value = this.inputEl.value;
+    const pos = this.inputEl.selectionStart ?? value.length;
+    this.ghostBefore.textContent = value.slice(0, pos);
+    this.caretText.textContent = value[pos] ?? "";
+    this.ghostAfter.textContent = value.slice(pos + 1);
+    this.onTyping?.(value.length);
   }
 
   private onKeydown(e: KeyboardEvent): void {
@@ -332,9 +357,8 @@ export class Terminal implements ITerminal {
     );
     const val = this.history[this.historyIndex] ?? "";
     this.inputEl.value = val;
+    this.inputEl.setSelectionRange(val.length, val.length);
     this.renderGhost();
-    const end = val.length;
-    this.inputEl.setSelectionRange(end, end);
   }
 
   /**
@@ -388,9 +412,8 @@ export class Terminal implements ITerminal {
 
   private setInput(value: string): void {
     this.inputEl.value = value;
+    this.inputEl.setSelectionRange(value.length, value.length);
     this.renderGhost();
-    const end = value.length;
-    this.inputEl.setSelectionRange(end, end);
   }
 
   private async submit(raw: string): Promise<void> {

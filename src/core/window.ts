@@ -16,6 +16,8 @@ export interface WindowChrome {
   closeBtn: HTMLElement;
   /** The minimize control. */
   minimizeBtn: HTMLElement;
+  /** The maximize/restore control. */
+  maximizeBtn: HTMLElement;
   /** Resize handles, each tagged with `data-dir` (e | s | se). */
   resizeHandles: HTMLElement[];
 }
@@ -56,7 +58,13 @@ export function createWindowChrome(title: string): WindowChrome {
   minimizeBtn.title = "minimize";
   minimizeBtn.setAttribute("aria-label", "minimize window");
   minimizeBtn.textContent = "–";
-  controls.append(minimizeBtn);
+  const maximizeBtn = document.createElement("button");
+  maximizeBtn.className = "window__btn window__btn--max";
+  maximizeBtn.type = "button";
+  maximizeBtn.title = "maximize";
+  maximizeBtn.setAttribute("aria-label", "maximize window");
+  maximizeBtn.textContent = "□";
+  controls.append(minimizeBtn, maximizeBtn);
 
   bar.append(dots, titleEl, controls);
 
@@ -73,5 +81,13 @@ export function createWindowChrome(title: string): WindowChrome {
     return h;
   });
 
-  return { el, barEl: bar, bodyEl: body, closeBtn: closeDot, minimizeBtn, resizeHandles };
+  return {
+    el,
+    barEl: bar,
+    bodyEl: body,
+    closeBtn: closeDot,
+    minimizeBtn,
+    maximizeBtn,
+    resizeHandles,
+  };
 }
