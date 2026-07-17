@@ -8,7 +8,8 @@
 import type { CommandContext } from "@/types";
 import type { ChatTurn, LiffyEngine } from "@/core/liffy/engine";
 import { RetrievalEngine } from "@/core/liffy/retrieval";
-import { prefersReducedMotion, sleep, typewriter } from "@/core/fx";
+import { buildCat } from "@/core/cat";
+import { prefersReducedMotion, sleep, startSpinner, typewriter } from "@/core/fx";
 import liffyMd from "@/data/liffy.md?raw";
 
 // One engine instance for the session (parses the MD once).
@@ -77,14 +78,34 @@ export function openLiffy(ctx: CommandContext): void {
     scroll();
   };
 
+  // Claude-CLI-style pondering verbs, cycled per question.
+  const VERBS = [
+    "thinking",
+    "pondering",
+    "purring",
+    "consulting the cat",
+    "rummaging through notes",
+    "recalling",
+  ];
+  let verbIdx = 0;
+
   const ask = async (q: string): Promise<void> => {
     if (busy) return;
     busy = true;
     input.disabled = true;
     addLine("you>", "liffy__who--user").textContent = q;
     history.push({ role: "user", text: q });
-    if (!prefersReducedMotion()) await sleep(220); // a beat of "thinking"
+
+    // A visible beat of "thinking" — spinner line that collapses into a
+    // dim "✳ thought for X.Xs" receipt, like a real agent CLI.
+    const thinkEl = addLine("", "liffy__who--bot");
+    thinkEl.classList.add("liffy__thinking");
+    const spin = startSpinner(thinkEl, VERBS[verbIdx++ % VERBS.length]!);
+    if (!prefersReducedMotion()) await sleep(650 + Math.random() * 750);
     const reply = await eng.ask(q, history);
+    const secs = spin.stop();
+    thinkEl.textContent = `✳ thought for ${Math.max(secs, 0.1).toFixed(1)}s`;
+
     history.push({ role: "liffy", text: reply.text });
     await say(reply.text);
     busy = false;
@@ -108,6 +129,10 @@ export function openLiffy(ctx: CommandContext): void {
     height: 420,
   });
   win.bodyEl.style.padding = "0";
+
+  // The cat naps at the top of the chat too. It followed us here.
+  const cat = buildCat("cat liffy__cat");
+  log.prepend(cat);
 
   void say(GREETING);
   window.setTimeout(() => input.focus(), 60);

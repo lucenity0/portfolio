@@ -1,0 +1,161 @@
+/* ------------------------------------------------------------------ *
+ * hero + cat — the sleeping pixel cat (ported from the original
+ * under-construction canvas) and the "hello, stranger!" greeting.
+ * The cat block (.cat) is reused by the terminal `cat` command and the
+ * Liffy window; all motion is reduced-motion gated.
+ * ------------------------------------------------------------------ */
+
+/* ---- the cat itself (reusable) ------------------------------------ */
+.cat {
+  position: relative;
+  display: inline-block;
+}
+.cat__art {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 6px;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--dim);
+  text-shadow: 0 0 6px rgba(244, 244, 244, 0.08);
+  user-select: none;
+}
+.cat__zzz {
+  position: absolute;
+  top: -1.2em;
+  right: 22%;
+  font-family: var(--mono);
+  color: var(--sub);
+  font-size: 11px;
+  line-height: 1;
+  user-select: none;
+}
+.cat__z {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  opacity: 0.85;
+}
+/* Static stack when motion is off: a lil "zZz" ladder. */
+.cat__z:nth-child(2) {
+  right: 0.7em;
+  bottom: 0.9em;
+  font-size: 1.2em;
+}
+.cat__z:nth-child(3) {
+  right: 1.5em;
+  bottom: 1.9em;
+  font-size: 1.45em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cat__z {
+    animation: cat-z 2.7s linear infinite;
+    opacity: 0;
+  }
+  /* When animating, all three float from the same spot with delays. */
+  .cat__z:nth-child(2),
+  .cat__z:nth-child(3) {
+    right: 0;
+    bottom: 0;
+    font-size: 1em;
+  }
+}
+@keyframes cat-z {
+  0% {
+    transform: translate(0, 0) scale(0.8);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-1.6em, -2.6em) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* ---- desktop hero --------------------------------------------------- */
+.hero {
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-desktop);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  pointer-events: none;
+  user-select: none;
+}
+.hero .cat__art {
+  font-size: 7px;
+}
+.hero__title {
+  font-size: var(--fs-lg, 20px);
+  letter-spacing: 3px;
+  color: var(--ink);
+  min-height: 1.4em;
+}
+.hero__caret {
+  margin-left: 4px;
+}
+.hero__sub {
+  font-size: var(--fs-xs);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sub);
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+.hero__sub.is-visible {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero.is-arriving {
+    animation: hero-in 700ms var(--ease-out, ease-out);
+  }
+}
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+/* Keep the hero out of the way on short viewports. */
+@media (max-height: 560px) {
+  .hero {
+    display: none;
+  }
+}
+
+/* ---- cat printed in the terminal (`cat` command) -------------------- */
+.terminal__cat .cat__art {
+  font-size: 5px;
+  color: var(--dim);
+}
+.terminal__cat {
+  margin: var(--sp-2) 0;
+}
+
+/* ---- thinking / spinner lines --------------------------------------- */
+.liffy__thinking {
+  color: var(--sub);
+  user-select: none;
+}
+.liffy__cat {
+  align-self: center;
+  margin: var(--sp-2) 0 var(--sp-1);
+}
+.liffy__cat .cat__art {
+  font-size: 4px;
+  color: var(--sub);
+}
+.liffy__cat .cat__zzz {
+  font-size: 8px;
+}

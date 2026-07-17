@@ -11,7 +11,34 @@ import { openProjects } from "@/apps/projects";
 import { openProjectWindow } from "@/apps/project-window";
 import { openLiffy } from "@/apps/liffy";
 import { openResume } from "@/apps/resume";
+import { buildCat } from "@/core/cat";
+import { prefersReducedMotion, sleep, startSpinner } from "@/core/fx";
 import { PROJECTS } from "@/data/projects";
+
+/**
+ * Wrap a window-opening command in a brief CLI spinner ("⠹ waking about…")
+ * so opening an app feels like the machine is doing something. Kept short
+ * (~0.4s) so it reads as texture, not lag; skipped under reduced motion.
+ */
+function theatrical(
+  label: string,
+  open: (ctx: CommandContext) => void,
+): (ctx: CommandContext) => Promise<void> {
+  return async (ctx) => {
+    if (prefersReducedMotion()) {
+      open(ctx);
+      return;
+    }
+    const el = document.createElement("div");
+    el.className = "terminal__line terminal__line--sub";
+    ctx.terminal.printEl(el);
+    const spin = startSpinner(el, label);
+    await sleep(320 + Math.random() * 260);
+    spin.stop();
+    el.remove();
+    open(ctx);
+  };
+}
 
 export function buildCommands(): Command[] {
   const commands: Command[] = [];
@@ -26,14 +53,26 @@ export function buildCommands(): Command[] {
 
   commands.push(
     { name: "help", summary: "list available commands", run: printHelp },
-    { name: "about", summary: "who is lucenity", run: openAbout },
-    { name: "resume", summary: "view my résumé", run: openResume },
-    { name: "projects", summary: "browse my work", run: openProjects },
+    {
+      name: "about",
+      summary: "who is lucenity",
+      run: theatrical("waking about", openAbout),
+    },
+    {
+      name: "resume",
+      summary: "view my résumé",
+      run: theatrical("dusting off the résumé", openResume),
+    },
+    {
+      name: "projects",
+      summary: "browse my work",
+      run: theatrical("indexing projects", openProjects),
+    },
     {
       name: "project",
       summary: "open a specific project",
       usage: "project <slug>",
-      run: (ctx: CommandContext) => {
+      run: async (ctx: CommandContext) => {
         const slug = ctx.args[0];
         if (!slug) {
           ctx.terminal.print("usage: project <slug>", "dim");
@@ -43,16 +82,22 @@ export function buildCommands(): Command[] {
           );
           return;
         }
-        openProjectWindow(ctx, slug);
+        await theatrical(`spinning up ${slug}`, (c) =>
+          openProjectWindow(c, slug),
+        )(ctx);
       },
       complete: (partialArgs) =>
         partialArgs.length > 1 ? [] : PROJECTS.map((p) => p.slug),
     },
-    { name: "contact", summary: "how to reach me", run: openContact },
+    {
+      name: "contact",
+      summary: "how to reach me",
+      run: theatrical("opening channels", openContact),
+    },
     {
       name: "liffy",
       summary: "chat with liffy, my lil assistant",
-      run: openLiffy,
+      run: theatrical("poking liffy awake", openLiffy),
     },
     {
       name: "clear",
@@ -70,8 +115,11 @@ export function buildCommands(): Command[] {
       name: "cat",
       summary: "",
       hidden: true,
-      run: (ctx: CommandContext) =>
-        ctx.terminal.print("the cat is asleep. it is always asleep. =^..^=", "dim"),
+      run: (ctx: CommandContext) => {
+        const wrap = buildCat("cat terminal__cat");
+        ctx.terminal.printEl(wrap);
+        ctx.terminal.print("the cat is asleep. it is always asleep. =^..^=", "dim");
+      },
     },
     {
       name: "sudo",
