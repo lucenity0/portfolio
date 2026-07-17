@@ -113,6 +113,13 @@ export class Terminal implements ITerminal {
   private historyIndex = 0;
   private busy = false;
 
+  /** Fires with the live input length on every input change (cat hooks). */
+  onTyping?: (len: number) => void;
+  /** Fires when a line is submitted (or the input is cleared by submit). */
+  onSend?: () => void;
+  /** Fires when the scrollback is cleared (`clear` command / Ctrl+L). */
+  onClear?: () => void;
+
   constructor(
     mount: HTMLElement,
     registry: CommandRegistry,
@@ -221,6 +228,7 @@ export class Terminal implements ITerminal {
     for (const child of [...this.scrollEl.children]) {
       if (child !== this.inputRow) child.remove();
     }
+    this.onClear?.();
   }
 
   focusInput(): void {
@@ -271,6 +279,7 @@ export class Terminal implements ITerminal {
 
   private renderGhost(): void {
     this.ghostText.textContent = this.inputEl.value;
+    this.onTyping?.(this.inputEl.value.length);
   }
 
   private onKeydown(e: KeyboardEvent): void {
@@ -389,6 +398,7 @@ export class Terminal implements ITerminal {
     this.echoPrompt(raw);
     this.inputEl.value = "";
     this.renderGhost();
+    this.onSend?.();
     if (line === "") return;
 
     this.pushHistory(line);

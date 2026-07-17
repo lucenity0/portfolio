@@ -3,12 +3,17 @@
  * (`you>` / `liffy>`), grounded only in liffy.md via the RetrievalEngine.
  * The engine is behind the LiffyEngine interface, so a real Claude
  * backend can replace it later without touching this UI.
+ *
+ * The cat rides along as a CatCompanion: awake while idle, retreats to
+ * the top-left and naps while you type, squints while liffy thinks,
+ * head-bobs while the reply types out. Feed it via the meter; it also
+ * hides a few easter eggs (meow, cookie, pet, stare).
  * ------------------------------------------------------------------ */
 
 import type { CommandContext } from "@/types";
 import type { ChatTurn, LiffyEngine } from "@/core/liffy/engine";
 import { RetrievalEngine } from "@/core/liffy/retrieval";
-import { buildCat } from "@/core/cat";
+import { CatCompanion } from "@/core/cat-companion";
 import { prefersReducedMotion, sleep, startSpinner, typewriter } from "@/core/fx";
 import liffyMd from "@/data/liffy.md?raw";
 
@@ -18,6 +23,11 @@ const getEngine = (): LiffyEngine => (engine ??= new RetrievalEngine(liffyMd));
 
 const GREETING =
   'hey, i\'m liffy — nafees\'s lil terminal sidekick. ask me anything about him. try: "what does he build?"';
+
+const MEOW_RE = /^me+o+w+[\s.!?~]*$/i;
+const COOKIE_RE = /\b(cookie|treat)\b/i;
+const MEOW_REPLY =
+  "meow. mrrp. purrrr. (translation: hi. i like you. bring snacks.)";
 
 export function openLiffy(ctx: CommandContext): void {
   const eng = getEngine();
@@ -96,18 +106,37 @@ export function openLiffy(ctx: CommandContext): void {
     addLine("you>", "liffy__who--user").textContent = q;
     history.push({ role: "user", text: q });
 
+    // meow → answered on instinct, no retrieval involved.
+    if (MEOW_RE.test(q)) {
+      const receipt = addLine("", "liffy__who--bot");
+      receipt.classList.add("liffy__thinking");
+      receipt.textContent = "✳ thought for 0.0s (instinct)";
+      history.push({ role: "liffy", text: MEOW_REPLY });
+      companion.hop();
+      await say(MEOW_REPLY);
+      busy = false;
+      input.disabled = false;
+      input.focus();
+      return;
+    }
+
     // A visible beat of "thinking" — spinner line that collapses into a
-    // dim "✳ thought for X.Xs" receipt, like a real agent CLI.
+    // dim "✳ thought for X.Xs" receipt, like a real agent CLI. The cat
+    // squints along with it, then head-bobs while the reply types.
     const thinkEl = addLine("", "liffy__who--bot");
     thinkEl.classList.add("liffy__thinking");
     const spin = startSpinner(thinkEl, VERBS[verbIdx++ % VERBS.length]!);
+    companion.think(true);
     if (!prefersReducedMotion()) await sleep(650 + Math.random() * 750);
     const reply = await eng.ask(q, history);
     const secs = spin.stop();
+    companion.think(false);
     thinkEl.textContent = `✳ thought for ${Math.max(secs, 0.1).toFixed(1)}s`;
 
     history.push({ role: "liffy", text: reply.text });
+    companion.bob(true);
     await say(reply.text);
+    companion.bob(false);
     busy = false;
     input.disabled = false;
     input.focus();
@@ -118,6 +147,7 @@ export function openLiffy(ctx: CommandContext): void {
     const q = input.value.trim();
     if (!q || busy) return;
     input.value = "";
+    companion.onSend();
     void ask(q);
   });
 
@@ -130,9 +160,17 @@ export function openLiffy(ctx: CommandContext): void {
   });
   win.bodyEl.style.padding = "0";
 
-  // The cat naps at the top of the chat too. It followed us here.
-  const cat = buildCat("cat liffy__cat");
-  log.prepend(cat);
+  // The cat rides along: awake by the greeting, napping once you type.
+  const companion = new CatCompanion({
+    mount: root,
+    mode: "liffy",
+    idleFrame: "awake",
+  });
+  input.addEventListener("input", () => {
+    const v = input.value;
+    if (COOKIE_RE.test(v)) companion.fillNow();
+    else companion.onTyping(v.length);
+  });
 
   void say(GREETING);
   window.setTimeout(() => input.focus(), 60);

@@ -1,11 +1,20 @@
 /* ------------------------------------------------------------------ *
- * hero + cat — the sleeping pixel cat (ported from the original
- * under-construction canvas) and the "hello, stranger!" greeting.
- * The cat block (.cat) is reused by the terminal `cat` command and the
- * Liffy window; all motion is reduced-motion gated.
+ * hero + cat companion — the pixel cat (ported from the original
+ * under-construction canvas), the rotating typed greeting, and the
+ * interactive companion unit (feed meter, cookie plate, speech bubble,
+ * reactions). All motion is reduced-motion gated.
  * ------------------------------------------------------------------ */
 
-/* ---- the cat itself (reusable) ------------------------------------ */
+/* Self-hosted pixel font for the hero greeting (OFL, latin subset). */
+@font-face {
+  font-family: "Press Start 2P";
+  src: url("/fonts/press-start-2p.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---- the cat itself (reusable block) -------------------------------- */
 .cat {
   position: relative;
   display: inline-block;
@@ -47,13 +56,11 @@
   bottom: 1.9em;
   font-size: 1.45em;
 }
-
 @media (prefers-reduced-motion: no-preference) {
   .cat__z {
     animation: cat-z 2.7s linear infinite;
     opacity: 0;
   }
-  /* When animating, all three float from the same spot with delays. */
   .cat__z:nth-child(2),
   .cat__z:nth-child(3) {
     right: 0;
@@ -75,10 +82,262 @@
   }
 }
 
-/* ---- desktop hero --------------------------------------------------- */
+/* ---- companion unit (cat + meter + plate + bubble) ------------------- */
+.catc {
+  position: absolute;
+  z-index: var(--z-desktop);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none; /* only the cat + plate are clickable */
+  user-select: none;
+}
+.catc__cat,
+.catc__plate {
+  pointer-events: auto;
+}
+.catc__cat {
+  cursor: pointer;
+}
+/* z's only while asleep */
+.catc:not([data-frame="sleep"]) .cat__zzz {
+  display: none;
+}
+
+/* hero placement: centered above the greeting; corner = top-left 16px */
+.catc--hero {
+  left: 50%;
+  top: 14%;
+  transform: translateX(-50%);
+}
+.catc--hero .cat__art {
+  font-size: 7px;
+  text-shadow: 0 0 10px rgba(244, 244, 244, 0.12);
+}
+.catc--hero.catc--corner {
+  left: 16px;
+  top: 16px;
+  transform: none;
+}
+.catc--hero.catc--corner .cat__art {
+  font-size: 4px;
+}
+
+/* liffy placement: top-center of the chat; corner = top-left 8px */
+.catc--liffy {
+  left: 50%;
+  top: 10px;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+.catc--liffy .cat__art {
+  font-size: 4px;
+}
+.catc--liffy.catc--corner {
+  left: 8px;
+  top: 8px;
+  transform: none;
+}
+.catc--liffy.catc--corner .cat__art {
+  font-size: 3px;
+}
+
+/* breathing + glow pulse (Phase A), on the hero cat wherever it sits */
+@media (prefers-reduced-motion: no-preference) {
+  .catc,
+  .catc .cat__art {
+    transition:
+      left 600ms var(--ease-out, ease-out),
+      top 600ms var(--ease-out, ease-out),
+      transform 600ms var(--ease-out, ease-out),
+      font-size 600ms var(--ease-out, ease-out);
+  }
+  .catc--hero .cat__art {
+    transform-origin: 50% 100%;
+    animation:
+      cat-breathe 4.2s ease-in-out infinite,
+      cat-glow 3.4s ease-in-out infinite;
+  }
+}
+@keyframes cat-breathe {
+  0%,
+  100% {
+    transform: scaleY(1);
+    opacity: 0.92;
+  }
+  50% {
+    transform: scaleY(1.025) scaleX(1.006);
+    opacity: 1;
+  }
+}
+@keyframes cat-glow {
+  0%,
+  100% {
+    text-shadow: 0 0 6px rgba(244, 244, 244, 0.08);
+  }
+  50% {
+    text-shadow:
+      0 0 14px rgba(244, 244, 244, 0.24),
+      0 0 32px rgba(244, 244, 244, 0.1);
+  }
+}
+
+/* ---- feed meter + cookie plate --------------------------------------- */
+.catc__meter {
+  position: relative;
+  width: 64px;
+  height: 6px;
+  margin-top: 5px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.35);
+  opacity: 0;
+}
+.catc--typing .catc__meter {
+  opacity: 1;
+}
+.catc__fill {
+  height: 100%;
+  width: 0%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--dim) 0 2px,
+    transparent 2px 3px
+  );
+}
+.catc__plate {
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%) scale(0.4);
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  border: 2px solid var(--dim);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 35%, var(--sub) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 65% 60%, var(--sub) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 50% 30%, var(--sub) 0 1px, transparent 1.5px),
+    var(--panel);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+}
+.catc__plate.is-served {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+  pointer-events: auto;
+}
+.catc__plate:hover {
+  border-color: var(--ink);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .catc__meter {
+    transition: opacity 250ms ease;
+  }
+  .catc__fill {
+    transition: width 150ms linear;
+  }
+  .catc__plate {
+    transition:
+      opacity 200ms ease,
+      transform 200ms var(--ease-out, ease-out);
+  }
+}
+
+/* ---- speech bubble ---------------------------------------------------- */
+.catc__bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  color: var(--ink);
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  padding: 3px 7px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+/* cornered: the bubble flips below the cat so it stays on screen */
+.catc--corner .catc__bubble {
+  bottom: auto;
+  top: calc(100% + 8px);
+  left: 0;
+  transform: none;
+}
+.catc__bubble.is-visible {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .catc__bubble {
+    transition: opacity 180ms ease;
+  }
+}
+
+/* ---- reactions (transforms live on the inner cat, never the root) ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .catc--shake .catc__cat {
+    animation: catc-shake 400ms ease-in-out;
+  }
+  .catc--hop .catc__cat {
+    animation: catc-hop 500ms var(--ease-out, ease-out);
+  }
+  .catc--bob .catc__cat {
+    animation: catc-bob 700ms ease-in-out infinite;
+  }
+  .catc__cat {
+    transition: transform 300ms ease;
+  }
+}
+.catc--pet .catc__cat {
+  transform: rotate(-4deg) scale(1.03);
+}
+@keyframes catc-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+@keyframes catc-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes catc-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(2px);
+  }
+}
+
+/* ---- desktop hero (greeting text; the cat is a sibling companion) ---- */
 .hero {
   position: absolute;
-  top: 14%;
+  top: calc(14% + 140px);
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-desktop);
@@ -89,17 +348,16 @@
   pointer-events: none;
   user-select: none;
 }
-.hero .cat__art {
-  font-size: 7px;
-}
 .hero__title {
-  font-size: var(--fs-lg, 20px);
-  letter-spacing: 3px;
+  font-family: "Press Start 2P", var(--mono);
+  font-size: 15px;
+  letter-spacing: 1px;
+  line-height: 1.7;
   color: var(--ink);
-  min-height: 1.4em;
+  min-height: 1.7em;
 }
 .hero__caret {
-  margin-left: 4px;
+  margin-left: 5px;
 }
 .hero__sub {
   font-size: var(--fs-xs);
@@ -107,55 +365,56 @@
   text-transform: uppercase;
   color: var(--sub);
   opacity: 0;
-  transition: opacity 600ms ease;
 }
 .hero__sub.is-visible {
   opacity: 1;
 }
+/* typing hides the greeting; `clear` brings it back */
+.hero--hidden {
+  opacity: 0;
+}
 @media (prefers-reduced-motion: no-preference) {
-  .hero.is-arriving {
-    animation: hero-in 700ms var(--ease-out, ease-out);
+  .hero {
+    transition: opacity 400ms ease;
+  }
+  .hero__sub {
+    transition: opacity 600ms ease;
+  }
+  .hero.is-arriving,
+  .catc--hero.is-arriving {
+    animation: hero-in 800ms var(--ease-out, ease-out);
   }
 }
+/* Lateral slide + fade. Base transform is translateX(-50%) (centering),
+   so the keyframes offset from that rather than replace it. */
 @keyframes hero-in {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(10px);
+    transform: translateX(calc(-50% - 56px));
+  }
+  60% {
+    opacity: 1;
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateX(-50%);
   }
 }
-/* Keep the hero out of the way on short viewports. */
+/* Short viewports: no centered hero; the cat appears once it corners. */
 @media (max-height: 560px) {
   .hero {
     display: none;
   }
+  .catc--hero:not(.catc--corner) {
+    display: none;
+  }
 }
 
-/* ---- cat printed in the terminal (`cat` command) -------------------- */
+/* ---- cat printed in the terminal (`cat` command) --------------------- */
 .terminal__cat .cat__art {
   font-size: 5px;
   color: var(--dim);
 }
 .terminal__cat {
   margin: var(--sp-2) 0;
-}
-
-/* ---- thinking / spinner lines --------------------------------------- */
-.liffy__thinking {
-  color: var(--sub);
-  user-select: none;
-}
-.liffy__cat {
-  align-self: center;
-  margin: var(--sp-2) 0 var(--sp-1);
-}
-.liffy__cat .cat__art {
-  font-size: 4px;
-  color: var(--sub);
-}
-.liffy__cat .cat__zzz {
-  font-size: 8px;
 }

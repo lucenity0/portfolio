@@ -29,4 +29,9 @@ registry.registerAll(buildCommands());
 
 const terminal = new Terminal(mount, registry, windows);
 
-void runBootSequence(terminal).then(() => mountHero(mount));
+void runBootSequence(terminal).then(() => {
+  const hero = mountHero(mount);
+  terminal.onTyping = (len) => hero.companion.onTyping(len);
+  terminal.onSend = () => hero.companion.onSend();
+  terminal.onClear = () => hero.restore();
+});
