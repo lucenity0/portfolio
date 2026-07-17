@@ -14,6 +14,7 @@ import type {
 } from "@/types";
 import type { CommandRegistry } from "@/core/command-registry";
 import { typewriter } from "@/core/fx";
+import { tokenize } from "@/core/parse-command";
 
 const PROMPT = "visitor@lucenity:~$";
 
@@ -22,6 +23,16 @@ const VARIANT_CLASS: Record<LineVariant, string> = {
   dim: "terminal__line terminal__line--dim",
   sub: "terminal__line terminal__line--sub",
 };
+
+function longestCommonPrefix(words: string[]): string {
+  if (words.length === 0) return "";
+  let prefix = words[0]!;
+  for (const w of words.slice(1)) {
+    while (!w.startsWith(prefix)) prefix = prefix.slice(0, -1);
+    if (prefix === "") break;
+  }
+  return prefix;
+}
 
 export class Terminal implements ITerminal {
   private readonly scrollEl: HTMLElement;
@@ -104,6 +115,14 @@ export class Terminal implements ITerminal {
     // and the user starts typing, pull focus back. Leaves window/iframe
     // inputs and browser shortcuts (⌘/ctrl/alt combos) untouched.
     document.addEventListener("keydown", (e) => {
+      // Ctrl+]/Ctrl+[ cycle window focus — punch through before the
+      // modifier-key guard below (which exists for a different purpose:
+      // not stealing focus during OS/browser chords typed elsewhere).
+      if (e.ctrlKey && (e.key === "]" || e.key === "[")) {
+        e.preventDefault();
+        this.windows.cycle(e.key === "]" ? 1 : -1);
+        return;
+      }
       if (this.busy || e.metaKey || e.ctrlKey || e.altKey) return;
       const active = document.activeElement;
       if (active === this.inputEl) return;
@@ -202,6 +221,10 @@ export class Terminal implements ITerminal {
         e.preventDefault();
         this.recallHistory(1);
         break;
+      case "Tab":
+        e.preventDefault();
+        this.handleTab();
+        break;
       default:
         if (e.key === "l" && e.ctrlKey) {
           e.preventDefault();
@@ -223,6 +246,62 @@ export class Terminal implements ITerminal {
     this.inputEl.setSelectionRange(end, end);
   }
 
+  /**
+   * Bash-style completion. Only handles the caret-at-end-of-input case
+   * (mid-line completion is real-shell behavior, out of scope here).
+   */
+  private handleTab(): void {
+    const value = this.inputEl.value;
+    const parts = tokenize(value);
+    const trailingSpace = /\s$/.test(value);
+    const completingFirst = parts.length === 0 || (parts.length === 1 && !trailingSpace);
+    const partial = trailingSpace ? "" : (parts[parts.length - 1] ?? "");
+
+    let pool: string[];
+    if (completingFirst) {
+      pool = this.registry.visible().map((c) => c.name);
+    } else {
+      const cmd = this.registry.get(parts[0] ?? "");
+      if (!cmd?.complete) return;
+      const argsSoFar = trailingSpace ? parts.slice(1) : parts.slice(1, -1);
+      pool = cmd.complete(argsSoFar);
+    }
+
+    const candidates = pool.filter((c) => c.startsWith(partial)).sort();
+    if (candidates.length === 0) return;
+
+    if (candidates.length === 1) {
+      const completed = candidates[0]!;
+      const base = completingFirst
+        ? []
+        : trailingSpace
+          ? parts
+          : parts.slice(0, -1);
+      this.setInput([...base, completed].join(" ") + " ");
+      return;
+    }
+
+    const lcp = longestCommonPrefix(candidates);
+    if (lcp.length > partial.length) {
+      const base = completingFirst
+        ? []
+        : trailingSpace
+          ? parts
+          : parts.slice(0, -1);
+      this.setInput([...base, lcp].join(" "));
+      return;
+    }
+
+    this.print(candidates.join("  "), "dim");
+  }
+
+  private setInput(value: string): void {
+    this.inputEl.value = value;
+    this.renderGhost();
+    const end = value.length;
+    this.inputEl.setSelectionRange(end, end);
+  }
+
   private async submit(raw: string): Promise<void> {
     const line = raw.trim();
     this.echoPrompt(raw);
@@ -233,7 +312,8 @@ export class Terminal implements ITerminal {
     this.history.push(line);
     this.historyIndex = this.history.length;
 
-    const parts = line.split(/\s+/);
+    const parts = tokenize(line);
+    if (parts.length === 0) return;
     // Accept an optional leading slash, so `/liffy` works like `liffy`.
     const name = (parts[0] ?? "").replace(/^\//, "");
     const args = parts.slice(1);

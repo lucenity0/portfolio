@@ -35,6 +35,8 @@ export interface WindowManager {
   close(id: string): void;
   focus(id: string): void;
   get(id: string): WindowInstance | undefined;
+  /** Focus the next (1) or previous (-1) open, non-minimized window in MRU order. */
+  cycle(dir: 1 | -1): void;
 }
 
 /** The terminal surface commands write back to. */
@@ -65,6 +67,8 @@ export interface Command {
   /** Hidden commands (easter eggs) don't appear in `help`. */
   hidden?: boolean;
   run(ctx: CommandContext): void | Promise<void>;
+  /** Optional: return the full candidate pool for the arg position being completed. */
+  complete?(partialArgs: string[]): string[];
 }
 
 /** How a project is presented inside its window. */

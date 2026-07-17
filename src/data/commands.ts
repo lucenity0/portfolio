@@ -45,6 +45,8 @@ export function buildCommands(): Command[] {
         }
         openProjectWindow(ctx, slug);
       },
+      complete: (partialArgs) =>
+        partialArgs.length > 1 ? [] : PROJECTS.map((p) => p.slug),
     },
     { name: "contact", summary: "how to reach me", run: openContact },
     {

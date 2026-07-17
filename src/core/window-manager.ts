@@ -28,6 +28,8 @@ export class DesktopWindowManager implements WindowManager {
   private readonly tray: MinimizedTray;
   private readonly records = new Map<string, WinRecord>();
   private readonly minimized = new Set<string>();
+  /** Most-recently-focused window ids, front = most recent. Drives `cycle()`. */
+  private mru: string[] = [];
   private topZ = 100;
   private spawnCount = 0;
 
@@ -95,6 +97,7 @@ export class DesktopWindowManager implements WindowManager {
     rec.el.remove();
     this.records.delete(id);
     this.minimized.delete(id);
+    this.mru = this.mru.filter((x) => x !== id);
     if (this.tray.has(id)) this.tray.remove(id);
   }
 
@@ -108,6 +111,17 @@ export class DesktopWindowManager implements WindowManager {
       );
     }
     rec.el.style.zIndex = String(++this.topZ);
+    this.mru = [id, ...this.mru.filter((x) => x !== id)];
+  }
+
+  /** Focus the next (1) or previous (-1) open, non-minimized window. */
+  cycle(dir: 1 | -1): void {
+    const open = this.mru.filter(
+      (id) => this.records.has(id) && !this.minimized.has(id),
+    );
+    if (open.length < 2) return;
+    const next = dir === 1 ? open[1] : open[open.length - 1];
+    if (next) this.focus(next);
   }
 
   get(id: string): WindowInstance | undefined {
