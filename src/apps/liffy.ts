@@ -70,7 +70,9 @@ export function openLiffy(ctx: CommandContext): void {
     if (prefersReducedMotion()) {
       el.textContent = text;
     } else {
-      await typewriter(el, text, { speed: 9 });
+      // Type faster as answers get longer, so a full topic never crawls.
+      const speed = text.length > 320 ? 4 : text.length > 160 ? 6 : 9;
+      await typewriter(el, text, { speed });
     }
     scroll();
   };
