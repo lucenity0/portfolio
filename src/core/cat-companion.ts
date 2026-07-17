@@ -25,6 +25,31 @@ const STARE_HOVER_MS = 3000;
 const MUNCH_FLIPS = 5;
 const MUNCH_STEP_MS = 260;
 
+/* Occasional sleep-talk: the cat murmurs cryptic hints at the hidden
+   easter eggs, so first-time visitors have a trail to follow. Rare on
+   purpose — a murmur every couple of minutes, and only while idle. */
+const MURMUR_FIRST_MS = 45_000; // first murmur after ~45s on the page
+const MURMUR_GAP_MIN_MS = 100_000; // then every 100–160s
+const MURMUR_GAP_JITTER_MS = 60_000;
+const MURMUR_RETRY_MS = 15_000; // busy/typing? try again in a bit
+const MURMUR_IDLE_MS = 20_000; // stay quiet within 20s of activity
+const MURMUR_SHOW_MS = 4_500;
+
+const HERO_MURMURS = [
+  "zzz... sudo... nice try... zzz",
+  "mrrp... a command... named after me...",
+  "zzz... git clone... take one home...",
+  "...ctrl+] ... windows go round... zzz",
+  "zzz... liffy keeps secrets too...",
+  "...feed me... 24 keys... zzz",
+];
+const LIFFY_MURMURS = [
+  "mrrp... say meow... i dare you...",
+  "zzz... cookie... just type it...",
+  "...hold me... one whole second... prrr",
+  "zzz... stare at me... see what happens...",
+];
+
 export type CompanionMode = "hero" | "liffy";
 
 export interface CompanionOptions {
@@ -56,6 +81,9 @@ export class CatCompanion {
   private bubbleTimer: number | null = null;
   private petTimer: number | null = null;
   private hoverTimer: number | null = null;
+  private readonly murmurs: string[];
+  private murmurIdx = 0;
+  private lastActivity = performance.now();
 
   constructor(opts: CompanionOptions) {
     this.opts = opts;
@@ -95,12 +123,18 @@ export class CatCompanion {
       e.stopPropagation();
       this.feed();
     });
+
+    // Sleep-talk loop: shuffled once so every visit hints in a fresh order.
+    this.murmurs = [...(opts.mode === "hero" ? HERO_MURMURS : LIFFY_MURMURS)]
+      .sort(() => Math.random() - 0.5);
+    this.scheduleMurmur(MURMUR_FIRST_MS);
   }
 
   /* ---- typing / meter ------------------------------------------------ */
 
   /** Live input length → meter fill; first keystroke sends cat to corner. */
   onTyping(len: number): void {
+    if (len > 0) this.lastActivity = performance.now();
     if (len > 0 && !this.cornered) this.corner();
     const ratio = Math.min(len / TYPE_CAP, 1);
     this.fillEl.style.width = `${ratio * 100}%`;
@@ -110,6 +144,7 @@ export class CatCompanion {
 
   /** Input was sent or cleared → meter resets (cat stays put). */
   onSend(): void {
+    this.lastActivity = performance.now();
     this.fillEl.style.width = "0%";
     this.plateEl.classList.remove("is-served");
     if (!this.munching) this.el.classList.remove("catc--typing");
@@ -207,6 +242,32 @@ export class CatCompanion {
       this.bubbleEl.classList.remove("is-visible");
       this.bubbleTimer = null;
     }, ms);
+  }
+
+  /* ---- sleep-talk hints ----------------------------------------------- */
+
+  private scheduleMurmur(delay: number): void {
+    window.setTimeout(() => this.tryMurmur(), delay);
+  }
+
+  /** Murmur one hint if the coast is clear; otherwise retry shortly. */
+  private tryMurmur(): void {
+    // Window closed (liffy) → the loop dies with it.
+    if (!this.el.isConnected) return;
+    const occupied =
+      this.munching ||
+      this.thinking ||
+      this.bobbing ||
+      this.petting ||
+      this.bubbleTimer !== null ||
+      document.hidden ||
+      performance.now() - this.lastActivity < MURMUR_IDLE_MS;
+    if (occupied) {
+      this.scheduleMurmur(MURMUR_RETRY_MS);
+      return;
+    }
+    this.say(this.murmurs[this.murmurIdx++ % this.murmurs.length]!, MURMUR_SHOW_MS);
+    this.scheduleMurmur(MURMUR_GAP_MIN_MS + Math.random() * MURMUR_GAP_JITTER_MS);
   }
 
   /* ---- internals ------------------------------------------------------ */
