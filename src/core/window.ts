@@ -18,11 +18,14 @@ export interface WindowChrome {
   minimizeBtn: HTMLElement;
   /** The maximize/restore control. */
   maximizeBtn: HTMLElement;
-  /** Resize handles, each tagged with `data-dir` (e | s | se). */
+  /** Resize handles, each tagged with `data-dir` — all four edges + corners. */
   resizeHandles: HTMLElement[];
 }
 
-const RESIZE_DIRS = ["e", "s", "se"] as const;
+const RESIZE_DIRS = ["n", "s", "e", "w", "ne", "nw", "se", "sw"] as const;
+
+/** A resize direction: the edge or corner a handle drags. */
+export type ResizeDir = (typeof RESIZE_DIRS)[number];
 
 export function createWindowChrome(title: string): WindowChrome {
   const el = document.createElement("section");

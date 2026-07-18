@@ -109,6 +109,10 @@ export function buildCat(className = "cat", frame: CatFrame = "sleep"): HTMLElem
     zzz.append(z);
   }
 
+  // Belt-and-braces for WebKit: `user-select: none` alone doesn't stop a
+  // drag-out on every Safari version, and the cat is a click target.
+  wrap.addEventListener("dragstart", (e) => e.preventDefault());
+
   wrap.append(zzz, art);
   return wrap;
 }

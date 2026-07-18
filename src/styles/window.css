@@ -87,55 +87,126 @@
   border-color: var(--dim);
 }
 
-/* Body — the app content area, scrolls internally. */
+/* Body — the app content area, scrolls internally.
+   The right/bottom margins inset the body's scrollbar (which paints at its
+   own padding-box edge) clear of the resize handles. Margin, not padding —
+   liffy and project-window zero the padding for full-bleed content. */
 .window__body {
   flex: 1;
   overflow: auto;
   padding: var(--sp-4);
+  margin-right: var(--window-gutter);
+  margin-bottom: var(--window-gutter);
   line-height: 1.6;
   color: var(--ink);
 }
 
-/* Resize handles (east / south / south-east corner). */
+/* Resize handles — all four edges and all four corners. Edges are inset
+   10px at each end so the corners always win the overlap. */
 .window__resize {
   position: absolute;
   z-index: 2;
 }
-.window__resize--e {
-  top: 10px;
-  bottom: 10px;
-  right: -2px;
-  width: 8px;
-  cursor: ew-resize;
-}
+.window__resize--n,
 .window__resize--s {
   left: 10px;
   right: 10px;
-  bottom: -2px;
-  height: 8px;
+  height: var(--window-gutter);
   cursor: ns-resize;
 }
-.window__resize--se {
-  right: -2px;
+.window__resize--n {
+  top: -2px;
+}
+.window__resize--s {
   bottom: -2px;
+}
+.window__resize--e,
+.window__resize--w {
+  top: 10px;
+  bottom: 10px;
+  width: var(--window-gutter);
+  cursor: ew-resize;
+}
+.window__resize--e {
+  right: -2px;
+}
+.window__resize--w {
+  left: -2px;
+}
+.window__resize--ne,
+.window__resize--nw,
+.window__resize--se,
+.window__resize--sw {
   width: 16px;
   height: 16px;
+}
+.window__resize--nw,
+.window__resize--se {
   cursor: nwse-resize;
+}
+.window__resize--ne,
+.window__resize--sw {
+  cursor: nesw-resize;
+}
+.window__resize--nw {
+  top: -2px;
+  left: -2px;
+}
+.window__resize--ne {
+  top: -2px;
+  right: -2px;
+}
+.window__resize--sw {
+  bottom: -2px;
+  left: -2px;
+}
+.window__resize--se {
+  bottom: -2px;
+  right: -2px;
 }
 /* Fatter grab targets on touch screens. */
 @media (pointer: coarse) {
-  .window__resize--e {
+  .window__resize--e,
+  .window__resize--w {
     width: 18px;
+  }
+  .window__resize--e {
     right: -6px;
   }
+  .window__resize--w {
+    left: -6px;
+  }
+  .window__resize--n,
   .window__resize--s {
     height: 18px;
+  }
+  .window__resize--n {
+    top: -6px;
+  }
+  .window__resize--s {
     bottom: -6px;
   }
-  .window__resize--se {
+  .window__resize--ne,
+  .window__resize--nw,
+  .window__resize--se,
+  .window__resize--sw {
     width: 28px;
     height: 28px;
+  }
+  .window__resize--nw,
+  .window__resize--sw {
+    left: -6px;
+  }
+  .window__resize--ne,
+  .window__resize--se {
     right: -6px;
+  }
+  .window__resize--nw,
+  .window__resize--ne {
+    top: -6px;
+  }
+  .window__resize--sw,
+  .window__resize--se {
     bottom: -6px;
   }
   .window__btn {

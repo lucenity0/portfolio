@@ -293,6 +293,8 @@ body:not(.mode-gui) .gui {
 }
 .gui__tray-cat {
   cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .gui__clock {
   color: var(--dim);

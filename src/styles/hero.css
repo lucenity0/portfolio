@@ -15,9 +15,14 @@
 }
 
 /* ---- the cat itself (reusable block) -------------------------------- */
+/* The sprite is a <pre> of block glyphs, so WebKit treats it as ordinary
+   selectable text. Safari only honoured unprefixed `user-select` from 17.0 —
+   older desktop/iOS Safari needs the -webkit- half of every pair below. */
 .cat {
   position: relative;
   display: inline-block;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .cat__art {
   margin: 0;
@@ -28,6 +33,7 @@
   color: var(--dim);
   text-shadow: 0 0 6px rgba(244, 244, 244, 0.08);
   user-select: none;
+  -webkit-user-select: none;
 }
 .cat__zzz {
   position: absolute;
@@ -38,6 +44,7 @@
   font-size: 11px;
   line-height: 1;
   user-select: none;
+  -webkit-user-select: none;
 }
 .cat__z {
   position: absolute;
@@ -91,6 +98,10 @@
   align-items: center;
   pointer-events: none; /* only the cat + plate are clickable */
   user-select: none;
+  -webkit-user-select: none;
+  /* iOS long-press otherwise raises the selection callout, which collides
+     with the 1s press-and-hold pet gesture on .catc__cat. */
+  -webkit-touch-callout: none;
 }
 .catc__cat,
 .catc__plate {

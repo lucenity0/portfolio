@@ -1,6 +1,6 @@
 /* ------------------------------------------------------------------ *
  * window-manager — owns the set of open windows: creation, focus (raise
- * to top), close, drag-by-title-bar, resize (e/s/se handles), and
+ * to top), close, drag-by-title-bar, resize (all edges + corners), and
  * minimize → fold into the top-right MinimizedTray, restore → unfold.
  * ------------------------------------------------------------------ */
 
@@ -361,7 +361,13 @@ export class DesktopWindowManager implements WindowManager {
     });
   }
 
-  /** Resize from the e/s/se handles, clamped to the desktop and a minimum size. */
+  /**
+   * Resize from any edge or corner, clamped to the desktop and a minimum size.
+   *
+   * North and west drags move the window's origin, so each gesture works from
+   * the starting rect and pins the *opposite* edge: dragging `w` holds
+   * `left + width` steady, `n` holds `top + height`.
+   */
   private enableResize(
     id: string,
     el: HTMLElement,
@@ -377,22 +383,48 @@ export class DesktopWindowManager implements WindowManager {
         const dir = handle.dataset.dir ?? "se";
         const startX = e.clientX;
         const startY = e.clientY;
+        const startL = el.offsetLeft;
+        const startT = el.offsetTop;
         const startW = el.offsetWidth;
         const startH = el.offsetHeight;
-        // The window's origin is fixed for the gesture (e/s handles never move
-        // it), so the far edge is all that can run past the desktop.
-        const maxW = Math.max(MIN_W, this.area.w - el.offsetLeft - EDGE_GAP);
-        const maxH = Math.max(MIN_H, this.area.h - el.offsetTop - EDGE_GAP);
+        const { w: areaW, h: areaH } = this.area;
+        // The pinned far edges, for the origin-moving directions.
+        const right = startL + startW;
+        const bottom = startT + startH;
 
         const onMove = (ev: PointerEvent) => {
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
+          let l = startL;
+          let t = startT;
+          let w = startW;
+          let h = startH;
+
           if (dir.includes("e")) {
-            const next = Math.max(MIN_W, startW + (ev.clientX - startX));
-            el.style.width = `${Math.min(next, maxW)}px`;
+            w = Math.min(
+              Math.max(MIN_W, startW + dx),
+              Math.max(MIN_W, areaW - startL - EDGE_GAP),
+            );
           }
           if (dir.includes("s")) {
-            const next = Math.max(MIN_H, startH + (ev.clientY - startY));
-            el.style.height = `${Math.min(next, maxH)}px`;
+            h = Math.min(
+              Math.max(MIN_H, startH + dy),
+              Math.max(MIN_H, areaH - startT - EDGE_GAP),
+            );
           }
+          if (dir.includes("w")) {
+            l = Math.min(Math.max(0, startL + dx), right - MIN_W);
+            w = right - l;
+          }
+          if (dir.includes("n")) {
+            t = Math.min(Math.max(0, startT + dy), bottom - MIN_H);
+            h = bottom - t;
+          }
+
+          el.style.left = `${l}px`;
+          el.style.top = `${t}px`;
+          el.style.width = `${w}px`;
+          el.style.height = `${h}px`;
         };
         const onUp = (ev: PointerEvent) => {
           handle.releasePointerCapture?.(ev.pointerId);
