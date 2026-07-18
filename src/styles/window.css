@@ -59,14 +59,6 @@
   padding: 0;
   appearance: none;
 }
-.window__dot--close {
-  cursor: pointer;
-}
-.window__dot--close:hover {
-  background: var(--ink);
-  border-color: var(--ink);
-}
-
 .window__title {
   flex: 1;
   white-space: nowrap;
@@ -149,10 +141,6 @@
   .window__btn {
     width: 28px;
     height: 26px;
-  }
-  .window__dot--close {
-    width: 14px;
-    height: 14px;
   }
 }
 

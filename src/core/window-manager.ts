@@ -267,8 +267,8 @@ export class DesktopWindowManager implements WindowManager {
     };
 
     handle.addEventListener("pointerdown", (e: PointerEvent) => {
-      if ((e.target as HTMLElement).closest(".window__dot--close, .window__btn"))
-        return;
+      // Never start a drag from a title-bar control (min/max/close).
+      if ((e.target as HTMLElement).closest(".window__btn")) return;
       if (el.classList.contains("is-maximized")) return;
       dragging = true;
       startX = e.clientX;

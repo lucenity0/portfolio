@@ -50,5 +50,3 @@ CGPA: 8.21 · Expected June 2027
 - Co-led logistics for BMSCE's annual technical fest; previously Junior Coordinator for Utsav 2025, managing design team and on-ground event operations
 
 ---
-
-> Tip: drop a `resume.pdf` into `public/` and this window will offer a download link.

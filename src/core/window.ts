@@ -35,17 +35,15 @@ export function createWindowChrome(title: string): WindowChrome {
 
   const dots = document.createElement("span");
   dots.className = "window__dots";
-  // A real <button> so it's keyboard-focusable and SR-operable.
-  const closeDot = document.createElement("button");
-  closeDot.className = "window__dot window__dot--close";
-  closeDot.type = "button";
-  closeDot.title = "close";
-  closeDot.setAttribute("aria-label", "close window");
+  // Purely decorative traffic lights — the real, keyboard-focusable
+  // controls (incl. close) live in .window__controls on the right.
+  const dot1 = document.createElement("span");
+  dot1.className = "window__dot";
   const dot2 = document.createElement("span");
   dot2.className = "window__dot";
   const dot3 = document.createElement("span");
   dot3.className = "window__dot";
-  dots.append(closeDot, dot2, dot3);
+  dots.append(dot1, dot2, dot3);
 
   const titleEl = document.createElement("span");
   titleEl.className = "window__title";
@@ -65,7 +63,15 @@ export function createWindowChrome(title: string): WindowChrome {
   maximizeBtn.title = "maximize";
   maximizeBtn.setAttribute("aria-label", "maximize window");
   maximizeBtn.textContent = "□";
-  controls.append(minimizeBtn, maximizeBtn);
+  // NOTE: must NOT reuse the --max modifier — the manager finds the
+  // maximize button by `.window__btn--max` to flip its ❐/□ glyph.
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "window__btn window__btn--close";
+  closeBtn.type = "button";
+  closeBtn.title = "close";
+  closeBtn.setAttribute("aria-label", "close window");
+  closeBtn.textContent = "×";
+  controls.append(minimizeBtn, maximizeBtn, closeBtn);
 
   bar.append(dots, titleEl, controls);
 
@@ -86,9 +92,9 @@ export function createWindowChrome(title: string): WindowChrome {
     el,
     barEl: bar,
     bodyEl: body,
-    closeBtn: closeDot,
-    minimizeBtn,
-    maximizeBtn,
-    resizeHandles,
+    closeBtn: closeBtn,
+    minimizeBtn: minimizeBtn,
+    maximizeBtn: maximizeBtn,
+    resizeHandles: resizeHandles,
   };
 }

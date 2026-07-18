@@ -4,3 +4,6 @@ dist
 dist-ssr
 *.local
 .vite
+.claude/
+.claude/launch.json
+feedbacks
