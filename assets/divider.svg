@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 12" width="880" height="12" role="presentation" aria-hidden="true">
+<defs>
+<style>
+  .blip { opacity: 0; }
+  @keyframes slide { 0% { transform: translateX(0); opacity: 0 } 8% { opacity: .9 } 92% { opacity: .9 } 100% { transform: translateX(820px); opacity: 0 } }
+  @media (prefers-reduced-motion: no-preference) { .blip { animation: slide 5.5s linear infinite; } }
+</style>
+</defs>
+<line x1="0" y1="6" x2="880" y2="6" stroke="#2a2a2a" stroke-width="1"/>
+<g fill="#3a3a3a">
+<rect x="0"   y="3" width="2" height="6"/><rect x="220" y="3" width="2" height="6"/>
+<rect x="440" y="3" width="2" height="6"/><rect x="660" y="3" width="2" height="6"/>
+<rect x="878" y="3" width="2" height="6"/>
+</g>
+<rect class="blip" x="0" y="4.5" width="46" height="3" fill="#9a9a9a"/>
+</svg>
