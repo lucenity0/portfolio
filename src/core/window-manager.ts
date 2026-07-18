@@ -40,6 +40,37 @@ export class DesktopWindowManager implements WindowManager {
   constructor(root: HTMLElement) {
     this.root = root;
     this.tray = new MinimizedTray(root);
+
+    // Screens change size under open windows (phone rotation, browser
+    // resize, keyboard). Re-clamp every window so none is stranded
+    // off-glass or left wider than the desktop.
+    window.addEventListener("resize", () => this.reclampAll());
+  }
+
+  /** Fit every open window back inside the current desktop bounds. */
+  private reclampAll(): void {
+    const W = this.root.clientWidth;
+    const H = this.root.clientHeight;
+    if (W === 0 || H === 0) return;
+    for (const [id, rec] of this.records) {
+      if (this.minimized.has(id)) continue;
+      const el = rec.el;
+      if (el.classList.contains("is-maximized")) {
+        el.style.left = `${MAX_MARGIN}px`;
+        el.style.top = `${MAX_MARGIN}px`;
+        el.style.width = `${W - MAX_MARGIN * 2}px`;
+        el.style.height = `${H - MAX_MARGIN * 2}px`;
+        continue;
+      }
+      const w = Math.min(el.offsetWidth, Math.max(MIN_W, W - 16));
+      const h = Math.min(el.offsetHeight, Math.max(MIN_H, H - 16));
+      el.style.width = `${w}px`;
+      el.style.height = `${h}px`;
+      const x = Math.min(el.offsetLeft, Math.max(8, W - w - 8));
+      const y = Math.min(el.offsetTop, Math.max(8, H - h - 8));
+      el.style.left = `${Math.max(0, x)}px`;
+      el.style.top = `${Math.max(0, y)}px`;
+    }
   }
 
   open(opts: OpenWindowOptions): WindowInstance {

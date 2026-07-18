@@ -21,7 +21,8 @@ body {
 
 body {
   margin: 0;
-  background: var(--bg);
+  /* The "room" the computer sits in — a shade darker than the screen. */
+  background: #050505;
   color: var(--ink);
   font-family: var(--mono);
   font-size: var(--fs-md);
@@ -30,10 +31,20 @@ body {
   image-rendering: pixelated;
 }
 
-/* Faint grid + vignette behind everything (ported from index.html). */
-body::before {
+/* The OS surface, inside the monitor's glass. */
+#app {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+}
+
+/* Faint grid + vignette behind everything (ported from index.html).
+   Lives inside the screen, not the page — it's what the tube displays. */
+#app::before {
   content: "";
-  position: fixed;
+  position: absolute;
   inset: 0;
   background-image: linear-gradient(var(--line) 1px, transparent 1px),
     linear-gradient(90deg, var(--line) 1px, transparent 1px);
@@ -46,9 +57,9 @@ body::before {
 }
 
 /* CRT scanlines + soft corner darkening, above content but non-interactive. */
-body::after {
+#app::after {
   content: "";
-  position: fixed;
+  position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: var(--z-overlay);
@@ -59,13 +70,6 @@ body::after {
     ),
     radial-gradient(120% 120% at 50% 30%, transparent 60%, rgba(0, 0, 0, 0.45) 100%);
   mix-blend-mode: multiply;
-}
-
-#app {
-  position: relative;
-  z-index: 1;
-  height: 100%;
-  width: 100%;
 }
 
 /* ---- Reusable pieces ---------------------------------------------- */

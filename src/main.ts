@@ -5,6 +5,7 @@
 
 import "@/styles/tokens.css";
 import "@/styles/base.css";
+import "@/styles/rig.css";
 import "@/styles/terminal.css";
 import "@/styles/window.css";
 import "@/styles/apps.css";

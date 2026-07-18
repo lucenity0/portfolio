@@ -38,8 +38,27 @@
     -->
   </head>
   <body>
-    <!-- The desktop/terminal shell mounts here. -->
-    <div id="app" aria-label="lucenity terminal desktop"></div>
+    <!-- The physical rig: a CSS-drawn CRT monitor on a desk. The OS
+         (#app — terminal, windows, cat) lives inside its screen. -->
+    <div class="rig">
+      <div class="rig__monitor">
+        <div class="rig__screen">
+          <!-- The desktop/terminal shell mounts here. -->
+          <div id="app" aria-label="lucenity terminal desktop"></div>
+        </div>
+        <div class="rig__chin">
+          <span class="rig__brand">lucenity</span>
+          <span class="rig__badge" aria-hidden="true">
+            <span class="rig__led"></span>
+            <span class="rig__power">PWR</span>
+          </span>
+          <span class="rig__model" aria-hidden="true">CRT-64</span>
+        </div>
+      </div>
+      <div class="rig__stand" aria-hidden="true"></div>
+      <div class="rig__base" aria-hidden="true"></div>
+      <div class="rig__desk" aria-hidden="true"></div>
+    </div>
     <noscript>
       This portfolio runs on JavaScript. Meanwhile: I'm Nafees (lucenity0) —
       github.com/lucenity0.
