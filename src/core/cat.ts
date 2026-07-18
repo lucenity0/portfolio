@@ -20,8 +20,9 @@ export type CatFrame =
   | "munch-b"
   | "peek";
 
-/** The original 26×16 pixel matrix (`#` body, `.` transparent). */
-const BASE_ROWS = [
+/** The original 26×16 pixel matrix (`#` body, `.` transparent).
+ *  Exported for canvas renderers (the GUI wallpaper scene). */
+export const CAT_ROWS = [
   "..#.......#...............",
   ".###.....###..............",
   ".#.##....#.##.............",
@@ -69,7 +70,7 @@ const FRAME_PATCHES: Record<CatFrame, Partial<Record<number, string>>> = {
  */
 export function catAscii(frame: CatFrame = "sleep"): string {
   const patch = FRAME_PATCHES[frame];
-  return BASE_ROWS.map((row, i) => patch[i] ?? row)
+  return CAT_ROWS.map((row, i) => patch[i] ?? row)
     .map((row) => [...row].map((c) => (c === "#" ? "██" : "  ")).join(""))
     .join("\n");
 }

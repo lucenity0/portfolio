@@ -11,6 +11,7 @@
 
 import type { CommandContext } from "@/types";
 import type { ModeManager } from "@/core/mode";
+import { mountGuiWallpaper } from "@/apps/gui-wallpaper";
 import { openAbout } from "@/apps/about";
 import { openContact } from "@/apps/contact";
 import { openLiffy } from "@/apps/liffy";
@@ -36,6 +37,10 @@ export function mountGuiDesktop(
 ): GuiDesktop {
   const layer = document.createElement("div");
   layer.className = "gui";
+
+  /* ---- wallpaper: the night scene behind everything ----------------- */
+
+  const wallpaper = mountGuiWallpaper(layer);
 
   /* ---- desktop icons ---------------------------------------------- */
 
@@ -188,6 +193,7 @@ export function mountGuiDesktop(
       cancelAnimationFrame(raf);
       window.clearInterval(clockTimer);
       document.removeEventListener("click", onDocClick);
+      wallpaper.destroy();
       layer.remove();
     },
   };

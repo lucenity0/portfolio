@@ -33,10 +33,12 @@
 
 /* ---- shell swap --------------------------------------------------- */
 
-/* GUI mode hides the terminal surface + hero; both stay mounted so
-   state (scrollback, cat, open windows) survives switching back. */
+/* GUI mode hides the terminal surface, hero, and the floating cat
+   companion (the wallpaper scene has its own resident cat); all stay
+   mounted so state survives switching back. */
 body.mode-gui .terminal,
-body.mode-gui .hero {
+body.mode-gui .hero,
+body.mode-gui .catc--hero {
   display: none;
 }
 
@@ -44,6 +46,29 @@ body.mode-gui .hero {
    but belt-and-braces: never show it in tty mode. */
 body:not(.mode-gui) .gui {
   display: none;
+}
+
+/* The layer spans the screen for the wallpaper, but must never eat
+   clicks meant for windows beneath it — only its own widgets do. */
+.gui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.gui__icons,
+.gui__taskbar,
+.gui__menu {
+  pointer-events: auto;
+}
+
+/* ---- wallpaper: the night scene ----------------------------------- */
+
+.gui__wallpaper {
+  position: absolute;
+  inset: 0;
+  z-index: 1; /* above the grid (z 0), below icons (z 5) and windows */
+  pointer-events: none;
+  image-rendering: pixelated;
 }
 
 /* ---- desktop icons ------------------------------------------------ */
