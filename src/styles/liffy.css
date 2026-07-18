@@ -8,29 +8,28 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  /* The companion sits top-centre until the first keystroke, then corners
-     top-left. --cat-clear is only the vertical room the log reserves; the
-     fade itself is a circle around the sprite (see .u-fade-cat). */
-  --cat-clear: 84px;
-  --cat-fade-x: 50%;
-  --cat-fade-y: 34px;
-  --cat-fade-r: 104px;
+  /* Room the pinned companion cat occupies. Drives BOTH the log's top
+     padding and the fade-mask stop, so the two can never drift apart —
+     and so text can never sit opaque behind the cat.
+
+     Measured against the cat's rendered footprint (art + meter) from the
+     log's top edge: 85px centred, 67px cornered. Undershooting these
+     leaves unfaded text showing through the sprite. */
+  --cat-clear: 88px;
+  --fade-ramp: 28px;
 }
-/* Cornered: sprite drops to 3px art at the top-left, so the reserved strip
-   shrinks and the fade circle follows it over. One-way — liffy never
-   restores to centre. */
+/* Once the cat corners (first keystroke) it drops to 3px art in the
+   top-left, reclaiming a little. One-way: liffy never restores. */
 .liffy:has(.catc--corner) {
-  --cat-clear: 46px;
-  --cat-fade-x: 34px;
-  --cat-fade-y: 26px;
-  --cat-fade-r: 84px;
+  --cat-clear: 70px;
 }
 
 .liffy__log {
   flex: 1;
   overflow-y: auto;
   padding: var(--sp-4);
-  padding-top: var(--cat-clear);
+  /* Below the fade's end, so the first message is never born faded. */
+  padding-top: calc(var(--cat-clear) + var(--fade-ramp));
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
@@ -93,16 +92,15 @@
   .liffy__inputrow {
     font-size: 16px;
   }
-  /* A short window can't spare ~85px of log height for the cat — the
-     sprite is shrunk here (hero.css) so the reserved strip shrinks too. */
+  /* A short window can't spare ~90px of log height for the cat, so shrink
+     the sprite itself here (it had no phone rules at all) and drop the
+     clearance to match the smaller footprint. Values verified by measuring
+     the rendered cat, not guessed. */
   .liffy {
-    --cat-clear: 68px;
-    --cat-fade-r: 88px;
+    --cat-clear: 72px;
+    --fade-ramp: 20px;
   }
   .liffy:has(.catc--corner) {
-    --cat-clear: 40px;
-    --cat-fade-x: 28px;
-    --cat-fade-y: 22px;
-    --cat-fade-r: 70px;
+    --cat-clear: 54px;
   }
 }

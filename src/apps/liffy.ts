@@ -38,7 +38,7 @@ export function openLiffy(ctx: CommandContext): void {
   root.className = "liffy";
 
   const log = document.createElement("div");
-  log.className = "liffy__log u-fade-cat";
+  log.className = "liffy__log u-fade-top";
   log.setAttribute("role", "log");
   log.setAttribute("aria-live", "polite");
 
@@ -60,15 +60,6 @@ export function openLiffy(ctx: CommandContext): void {
   form.append(promptEl, input);
 
   root.append(log, form);
-
-  // Tapping the transcript re-focuses the input — the same "always ready"
-  // affordance the terminal surface has. Without it, dismissing the phone
-  // keyboard left no way to bring it back: the input is a thin row at the
-  // window's bottom edge and nothing else in the chat takes focus.
-  log.addEventListener("click", () => {
-    if ((window.getSelection()?.toString() ?? "") !== "") return;
-    input.focus();
-  });
 
   const scroll = () => {
     log.scrollTop = log.scrollHeight;

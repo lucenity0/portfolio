@@ -198,12 +198,7 @@ export class Terminal implements ITerminal {
     this.historyIndex = this.history.length;
 
     // --- wiring ---
-    input.addEventListener("input", () => {
-      this.renderGhost();
-      // A long command wraps the input row onto a second line, which grows
-      // past the clipped surface. Keep the live line in view as it grows.
-      this.scrollToBottom();
-    });
+    input.addEventListener("input", () => this.renderGhost());
     // Cursor moves without input changes (←/→, Home/End, clicks) still
     // need a ghost repaint so the block caret follows the real cursor.
     document.addEventListener("selectionchange", () => {

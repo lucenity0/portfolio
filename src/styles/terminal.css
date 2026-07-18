@@ -90,25 +90,35 @@
    input together, so click-to-caret stays aligned) which also stops
    iOS auto-zooming the focused field. */
 @media (max-width: 600px) {
+  /* Reserve the bottom-left strip the fixed .mode-toggle occupies. The
+     surface is `margin: auto auto 0` (bottom-anchored), so outer padding
+     lifts the whole prompt row clear of the button rather than overlapping. */
   .terminal {
     padding: 10px;
+    padding-bottom: calc(44px + env(safe-area-inset-bottom, 0px));
   }
-  /* Reserve the bottom-left strip the fixed .mode-toggle occupies — but
-     only while the keyboard is shut. With the keyboard up the viewport is
-     ~250px tall and the toggle is behind it anyway, so holding the space
-     back just pushes the live command line out of the clipped surface. */
-  body:not(.is-keyboard-open) .terminal {
-    padding-bottom: calc(38px + env(safe-area-inset-bottom, 0px));
-  }
+  /* Phone-width makes the surface full-bleed, so the cornered cat at
+     left:16px now sits over the scrollback. On desktop the surface is a
+     centred 760px column and the cat falls outside it — no fade needed, and
+     no compositing layer forced on the primary scroller. Same gradient as
+     .u-fade-top (base.css); declared inline so it stays inside the query. */
   .terminal__scroll {
     font-size: var(--fs-sm);
+    --cat-clear: 72px;
+    --fade-ramp: 24px;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent var(--cat-clear),
+      #000 calc(var(--cat-clear) + var(--fade-ramp))
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent var(--cat-clear),
+      #000 calc(var(--cat-clear) + var(--fade-ramp))
+    );
   }
-  /* NOTE: deliberately no mask here. .terminal__surface is bottom-anchored
-     (`margin: auto auto 0`), so the scroller's top edge floats with content
-     height and does not track the cat's fixed top-left corner — a mask
-     anchored to the scroller erased whatever text happened to be at its
-     top, with no cat above it. The cat is small and corner-pinned here;
-     liffy is where the sprite genuinely sits over the log. */
   .terminal__input-row {
     font-size: 16px;
   }
