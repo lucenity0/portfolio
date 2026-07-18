@@ -151,26 +151,26 @@ a:hover {
    Apply to the scroller itself — never to a shared ancestor, or the
    floating element fades along with the text.
 
-   Two knobs, each meaning exactly one thing:
-     --cat-clear  the floating element's footprint. Fully transparent over
-                  this whole span, so nothing shows through the sprite —
-                  a ramp that starts at 0 leaves text ~50% visible at the
-                  sprite's centre, which is the bug being fixed.
-     --fade-ramp  how far below that the fade takes to reach full opacity.
-   Pair with `padding-top: calc(clear + ramp)` so unscrolled content starts
-   below the ramp and is never born faded. */
-.u-fade-top {
-  -webkit-mask-image: linear-gradient(
-    to bottom,
+   The hole is a CIRCLE around the sprite, not a full-width band. A band
+   erases text clear across the scroller — including everything to the
+   right of a corner-pinned cat that it never overlapped — which reads as
+   lines being chopped in half. Only the cat's own neighbourhood fades.
+
+     --cat-fade-x/y  centre of the sprite, in the scroller's coordinates
+     --cat-fade-r    distance at which the fade reaches full opacity;
+                     the inner 45% is fully transparent (the sprite body). */
+.u-fade-cat {
+  -webkit-mask-image: radial-gradient(
+    circle var(--cat-fade-r, 96px) at var(--cat-fade-x, 34px) var(--cat-fade-y, 28px),
     transparent 0,
-    transparent var(--cat-clear, 56px),
-    #000 calc(var(--cat-clear, 56px) + var(--fade-ramp, 28px))
+    transparent 45%,
+    #000 100%
   );
-  mask-image: linear-gradient(
-    to bottom,
+  mask-image: radial-gradient(
+    circle var(--cat-fade-r, 96px) at var(--cat-fade-x, 34px) var(--cat-fade-y, 28px),
     transparent 0,
-    transparent var(--cat-clear, 56px),
-    #000 calc(var(--cat-clear, 56px) + var(--fade-ramp, 28px))
+    transparent 45%,
+    #000 100%
   );
 }
 

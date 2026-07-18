@@ -69,6 +69,12 @@
 .window__controls {
   display: inline-flex;
   gap: var(--sp-2);
+  /* Must out-stack .window__resize (z-index 2). The n/ne/nw handles overlay
+     the title bar, and under (pointer: coarse) the corner handles grow to
+     28×28 — squarely on top of the close button, which swallowed the tap
+     and started a resize instead. Only reachable with a mouse otherwise. */
+  position: relative;
+  z-index: 3;
 }
 .window__btn {
   appearance: none;
