@@ -131,7 +131,11 @@ export function openLiffy(ctx: CommandContext): void {
     const reply = await eng.ask(q, history);
     const secs = spin.stop();
     companion.think(false);
-    thinkEl.textContent = `✳ thought for ${Math.max(secs, 0.1).toFixed(1)}s`;
+    // Receipt names the notes it read, like a real agent CLI's tool log.
+    const read = reply.sources?.length
+      ? ` · read notes: ${reply.sources.join(", ")}`
+      : "";
+    thinkEl.textContent = `✳ thought for ${Math.max(secs, 0.1).toFixed(1)}s${read}`;
 
     history.push({ role: "liffy", text: reply.text });
     companion.bob(true);

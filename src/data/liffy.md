@@ -5,8 +5,14 @@
   when someone asks a question, Liffy finds the best-matching section and
   reads it back. Tips:
     - Put likely question keywords in the HEADINGS (they're weighted 2x).
+      Separate aliases with " / ". The FIRST alias is the topic's "name" —
+      keep it a tidy single word where possible (it becomes the label).
     - Keep sections short and conversational — they're spoken verbatim.
-    - Replace every TODO with real info.
+    - The engine also: fixes typos against this file's vocabulary, answers
+      "which projects use fastapi?" by scanning EVERY section for terms
+      that aren't heading keywords, splits "askcal and tiket?" into two
+      answers, and asks "did you mean A or B?" on genuine ties. So don't
+      over-stuff headings — body words are findable too.
   Liffy only answers from this file; anything not here → graceful fallback.
 -->
 
@@ -26,9 +32,8 @@ SQLAlchemy, Alembic, Redis, Celery, Vite.
 AI/ML: LLMs, prompt engineering, Gemini API, reinforcement learning (PPO), deep
 learning, NLP, multimodal fusion, CLIP, LangChain, ChromaDB.
 Tools: Git/GitHub, Docker, AWS EC2, Xcode, Figma, Jupyter Notebook, VS Code.
-This portfolio site itself runs on TypeScript + Vite, no framework.
 
-## projects / work / portfolio / what has he built / what do you build / apps / what has nafees made
+## projects / work / portfolio / what has he built / what do you build / apps / what has nafees made / list
 
 The big ones: **Liffy** (this — an AI code review tool), **Askcal** (an AI daily
 scheduler), **Tiket** (a ticket booking system), and **Schedulr** (an OS concepts
@@ -110,7 +115,7 @@ Two research threads right now: a multimodal hateful-meme detection paper
 (cross-modal attention, currently in IEEE resubmission) and a reinforcement
 learning project on adaptive traffic signal control. Ask about either by name.
 
-## hateful meme detection / multimodal / cross modal attention / clip / dynamic gating / ieee paper
+## memes / hateful meme detection / meme paper / multimodal / cross modal attention / clip / dynamic gating / ieee paper
 
 Research on multimodal hateful meme detection using CLIP ViT-L/14 with a dynamic
 gating mechanism. The framework combines a CrossModalAttention module, a
@@ -130,11 +135,21 @@ black-box problem in AI-driven infrastructure. Includes a real-time
 bidirectional SUMO–TraCI communication loop (IoT-style feedback), with
 constrained emergency preemption and priority queuing.
 
-## education / study / college / university / school / degree / cgpa / gpa
+## education / study / college / university / school / degree / cgpa / gpa / graduate / graduation
 
 B.E. in Computer Science & Engineering at B.M.S. College of Engineering
 (BMSCE), Bengaluru — CGPA 8.21, expected June 2027. Before that, Narayana PU
 College, 12th, Karnataka State Board, 94.33%, May 2023.
+
+## location / living / house / address / lives where / where does he live / visit / wherabouts / meet him / meeting
+
+Nafees's location is private.. rather i don't know his whereabouts too. For now, he resides as me in this pixel world !
+
+## age / how old / birthday / born / birthdate
+
+His notes don't say — he keeps numbers like that off the record. All I can
+tell you is he's a third-year CSE student graduating in 2027; you can do the
+math from there if you really must.
 
 ## experience / jobs / internships / work history / roles
 
@@ -167,11 +182,24 @@ memory of where things were left. Likes confirmation before big architectural
 changes, and tends to experiment first, then formalize understanding once
 something's proven out.
 
-## contact / reach / email / socials / github / linkedin / hire / hiring / availability / work with him
+## contact / reach / email / socials / github / linkedin / instagram / discord / hire / hiring / availability / work with him / gmail
 
 Best way in is GitHub — [github.com/lucenity0](https://github.com/lucenity0).
-TODO: add email + any other socials you want Liffy to hand out, and a line on
-what kind of roles/collabs you're open to right now.
+Email: nafees.s2005@gmail.com (secondary: 0lucenity@gmail.com).
+Discord: lucenity. Instagram: @lucenity_.
+LinkedIn: https://www.linkedin.com/in/nafees-s-6770712b0/
+
+## this site / website / how was this site made / terminal os / lucenityos / this portfolio
+
+The site you're standing in is a terminal-style portfolio Nafees built from
+scratch — vanilla TypeScript + Vite, no frameworks, no trackers. You type
+commands, retro windows power on with a CRT flicker, and everything stays
+monochrome pixels and scanlines. The windows drag, resize, minimize into a
+little corner folder, and maximize; the boot sequence is honest BIOS theatre.
+Even I live inside it — a retrieval bot with no LLM, reading straight from
+Nafees's notes. There are also a few commands the help menu won't admit to;
+the sleeping cat murmurs hints about them if you leave it alone long enough.
+It's live at me.lucenity.dev.
 
 ## hobbies / interests / fun / outside of work / art / artist
 
