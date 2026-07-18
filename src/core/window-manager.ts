@@ -16,6 +16,8 @@ import { playOnce, prefersReducedMotion } from "@/core/fx";
 const DEFAULTS = { width: 420, height: 300 } as const;
 const MIN_W = 260;
 const MIN_H = 160;
+const EDGE_GAP = 8; // breathing room between a window and the desktop edge
+const SPAWN_INSET = 16; // most a freshly-opened window may fill the desktop
 
 interface WinRecord {
   instance: WindowInstance;
@@ -36,6 +38,10 @@ export class DesktopWindowManager implements WindowManager {
   private mru: string[] = [];
   private topZ = 100;
   private spawnCount = 0;
+  /** The desktop area windows may occupy — the container minus shell chrome. */
+  private area = { w: 0, h: 0 };
+  /** Held on the instance so it outlives the constructor scope. */
+  private readonly ro: ResizeObserver;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -44,13 +50,44 @@ export class DesktopWindowManager implements WindowManager {
     // Screens change size under open windows (phone rotation, browser
     // resize, keyboard). Re-clamp every window so none is stranded
     // off-glass or left wider than the desktop.
-    window.addEventListener("resize", () => this.reclampAll());
+    //
+    // The container is watched directly, not just the viewport: #app resizes
+    // without a `resize` event whenever the rig's padding/border/chin come
+    // and go (tty ⇄ gui). The window listener stays for the converse case —
+    // a viewport change that leaves #app's own box alone.
+    this.ro = new ResizeObserver(() => this.remeasure());
+    this.ro.observe(root);
+    window.addEventListener("resize", () => this.remeasure());
+    this.measure();
+  }
+
+  /**
+   * Recompute the work area from the container's *rendered* size, minus the
+   * chrome the current shell reserves (`--desktop-inset-bottom` — the GUI
+   * taskbar, which paints above windows and would otherwise clip them).
+   *
+   * Deliberately clientWidth/clientHeight rather than getBoundingClientRect:
+   * .rig__screen runs a scaleY keyframe on every tty→gui switch, and a
+   * rect-based read would measure that squash and mis-clamp every window.
+   */
+  private measure(): void {
+    const inset = parseFloat(
+      getComputedStyle(this.root).getPropertyValue("--desktop-inset-bottom"),
+    );
+    this.area = {
+      w: this.root.clientWidth,
+      h: Math.max(MIN_H, this.root.clientHeight - (Number.isFinite(inset) ? inset : 0)),
+    };
+  }
+
+  private remeasure(): void {
+    this.measure();
+    this.reclampAll();
   }
 
   /** Fit every open window back inside the current desktop bounds. */
   private reclampAll(): void {
-    const W = this.root.clientWidth;
-    const H = this.root.clientHeight;
+    const { w: W, h: H } = this.area;
     if (W === 0 || H === 0) return;
     for (const [id, rec] of this.records) {
       if (this.minimized.has(id)) continue;
@@ -62,12 +99,12 @@ export class DesktopWindowManager implements WindowManager {
         el.style.height = `${H - MAX_MARGIN * 2}px`;
         continue;
       }
-      const w = Math.min(el.offsetWidth, Math.max(MIN_W, W - 16));
-      const h = Math.min(el.offsetHeight, Math.max(MIN_H, H - 16));
+      const w = Math.min(el.offsetWidth, Math.max(MIN_W, W - SPAWN_INSET));
+      const h = Math.min(el.offsetHeight, Math.max(MIN_H, H - SPAWN_INSET));
       el.style.width = `${w}px`;
       el.style.height = `${h}px`;
-      const x = Math.min(el.offsetLeft, Math.max(8, W - w - 8));
-      const y = Math.min(el.offsetTop, Math.max(8, H - h - 8));
+      const x = Math.min(el.offsetLeft, Math.max(EDGE_GAP, W - w - EDGE_GAP));
+      const y = Math.min(el.offsetTop, Math.max(EDGE_GAP, H - h - EDGE_GAP));
       el.style.left = `${Math.max(0, x)}px`;
       el.style.top = `${Math.max(0, y)}px`;
     }
@@ -88,18 +125,19 @@ export class DesktopWindowManager implements WindowManager {
 
     // Clamp to the desktop so windows never spawn off-screen or wider
     // than a phone viewport (near-fullscreen on small screens).
-    const maxW = Math.max(MIN_W, this.root.clientWidth - 16);
-    const maxH = Math.max(MIN_H, this.root.clientHeight - 16);
+    const { w: W, h: H } = this.area;
+    const maxW = Math.max(MIN_W, W - SPAWN_INSET);
+    const maxH = Math.max(MIN_H, H - SPAWN_INSET);
     const w = Math.min(opts.width ?? DEFAULTS.width, maxW);
     const h = Math.min(opts.height ?? DEFAULTS.height, maxH);
     el.style.width = `${w}px`;
     el.style.height = `${h}px`;
 
     const offset = (this.spawnCount++ % 6) * 26;
-    const x = opts.x ?? Math.max(8, this.root.clientWidth / 2 - w / 2 + offset);
-    const y = opts.y ?? Math.max(8, this.root.clientHeight / 2 - h / 2 + offset);
-    el.style.left = `${Math.min(x, Math.max(8, this.root.clientWidth - w - 8))}px`;
-    el.style.top = `${Math.min(y, Math.max(8, this.root.clientHeight - h - 8))}px`;
+    const x = opts.x ?? Math.max(EDGE_GAP, W / 2 - w / 2 + offset);
+    const y = opts.y ?? Math.max(EDGE_GAP, H / 2 - h / 2 + offset);
+    el.style.left = `${Math.min(x, Math.max(EDGE_GAP, W - w - EDGE_GAP))}px`;
+    el.style.top = `${Math.min(y, Math.max(EDGE_GAP, H - h - EDGE_GAP))}px`;
 
     if (typeof opts.content === "string") {
       bodyEl.textContent = opts.content;
@@ -198,8 +236,8 @@ export class DesktopWindowManager implements WindowManager {
       };
       rec.el.style.left = `${MAX_MARGIN}px`;
       rec.el.style.top = `${MAX_MARGIN}px`;
-      rec.el.style.width = `${this.root.clientWidth - MAX_MARGIN * 2}px`;
-      rec.el.style.height = `${this.root.clientHeight - MAX_MARGIN * 2}px`;
+      rec.el.style.width = `${this.area.w - MAX_MARGIN * 2}px`;
+      rec.el.style.height = `${this.area.h - MAX_MARGIN * 2}px`;
       rec.el.classList.add("is-maximized");
     }
     const btn = rec.el.querySelector<HTMLButtonElement>(".window__btn--max");
@@ -296,8 +334,8 @@ export class DesktopWindowManager implements WindowManager {
       if (!dragging) return;
       const nx = originLeft + (e.clientX - startX);
       const ny = originTop + (e.clientY - startY);
-      el.style.left = `${Math.min(Math.max(nx, -el.clientWidth + 80), this.root.clientWidth - 80)}px`;
-      el.style.top = `${Math.min(Math.max(ny, 0), this.root.clientHeight - 40)}px`;
+      el.style.left = `${Math.min(Math.max(nx, -el.clientWidth + 80), this.area.w - 80)}px`;
+      el.style.top = `${Math.min(Math.max(ny, 0), this.area.h - 40)}px`;
     };
 
     const onUp = (e: PointerEvent) => {
@@ -311,6 +349,7 @@ export class DesktopWindowManager implements WindowManager {
       // Never start a drag from a title-bar control (min/max/close).
       if ((e.target as HTMLElement).closest(".window__btn")) return;
       if (el.classList.contains("is-maximized")) return;
+      this.measure(); // the shell may have swapped its chrome since the last resize
       dragging = true;
       startX = e.clientX;
       startY = e.clientY;
@@ -322,7 +361,7 @@ export class DesktopWindowManager implements WindowManager {
     });
   }
 
-  /** Resize from the e/s/se handles, clamped to a minimum size. */
+  /** Resize from the e/s/se handles, clamped to the desktop and a minimum size. */
   private enableResize(
     id: string,
     el: HTMLElement,
@@ -334,18 +373,25 @@ export class DesktopWindowManager implements WindowManager {
         e.stopPropagation();
         if (el.classList.contains("is-maximized")) return;
         this.focus(id);
+        this.measure(); // the shell may have swapped its chrome since the last resize
         const dir = handle.dataset.dir ?? "se";
         const startX = e.clientX;
         const startY = e.clientY;
         const startW = el.offsetWidth;
         const startH = el.offsetHeight;
+        // The window's origin is fixed for the gesture (e/s handles never move
+        // it), so the far edge is all that can run past the desktop.
+        const maxW = Math.max(MIN_W, this.area.w - el.offsetLeft - EDGE_GAP);
+        const maxH = Math.max(MIN_H, this.area.h - el.offsetTop - EDGE_GAP);
 
         const onMove = (ev: PointerEvent) => {
           if (dir.includes("e")) {
-            el.style.width = `${Math.max(MIN_W, startW + (ev.clientX - startX))}px`;
+            const next = Math.max(MIN_W, startW + (ev.clientX - startX));
+            el.style.width = `${Math.min(next, maxW)}px`;
           }
           if (dir.includes("s")) {
-            el.style.height = `${Math.max(MIN_H, startH + (ev.clientY - startY))}px`;
+            const next = Math.max(MIN_H, startH + (ev.clientY - startY));
+            el.style.height = `${Math.min(next, maxH)}px`;
           }
         };
         const onUp = (ev: PointerEvent) => {

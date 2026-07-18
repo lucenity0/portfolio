@@ -31,6 +31,18 @@
   outline-offset: 2px;
 }
 
+/* ---- desktop work area -------------------------------------------- */
+
+/* How much of the desktop's bottom edge the shell's chrome occupies. The
+   window manager reads this off #app to size the area windows may use, so
+   it stays shell-agnostic: tty has no chrome, gui has the taskbar. */
+#app {
+  --desktop-inset-bottom: 0px;
+}
+body.mode-gui #app {
+  --desktop-inset-bottom: var(--gui-taskbar-h);
+}
+
 /* ---- shell swap --------------------------------------------------- */
 
 /* GUI mode hides the terminal surface, hero, and the floating cat
@@ -172,7 +184,7 @@ body:not(.mode-gui) .gui {
   display: flex;
   align-items: stretch;
   gap: var(--sp-2);
-  height: 42px;
+  height: var(--gui-taskbar-h);
   padding: 5px var(--sp-3);
   background: var(--panel);
   border-top: 2px solid var(--line);

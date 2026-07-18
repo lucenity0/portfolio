@@ -39,6 +39,9 @@
   --radius-lg: 16px;
   --border-w: 2px;
   --grid-size: 40px;
+  /* Taskbar height — the GUI shell's one piece of bottom chrome. The window
+     manager subtracts it from the desktop, so CSS and JS share this number. */
+  --gui-taskbar-h: 42px;
 
   /* Elevation — terminal is the console "wallpaper"; windows float above. */
   --z-desktop: 0;
