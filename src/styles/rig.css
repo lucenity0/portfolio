@@ -1,9 +1,45 @@
 /* ------------------------------------------------------------------ *
- * rig — the physical computer the whole site "runs on". A CSS-drawn
- * CRT monitor (bezel, glass, chin with power LED) on a stand and desk;
- * the OS (#app) renders inside the screen. Drawn, not an image, so it
+ * rig — the physical computer the GUI mode "runs on". A CSS-drawn CRT
+ * monitor (bezel, glass, chin with power LED) on a stand and desk; the
+ * OS (#app) renders inside the screen. Drawn, not an image, so it
  * stays monochrome-crisp at any DPI and ships zero extra bytes.
+ *
+ * In tty mode (the default) every rig wrapper flattens away so the
+ * terminal desktop is exactly the full-bleed page it always was.
  * ------------------------------------------------------------------ */
+
+/* ---- tty: the rig disappears, #app fills the page ----------------- */
+
+body:not(.mode-gui) .rig {
+  padding: 0;
+}
+body:not(.mode-gui) .rig__monitor {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  width: 100%;
+}
+body:not(.mode-gui) .rig__screen {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+body:not(.mode-gui) .rig__screen::after {
+  display: none; /* no glass glare on a bare terminal */
+}
+body:not(.mode-gui) .rig__chin,
+body:not(.mode-gui) .rig__stand,
+body:not(.mode-gui) .rig__base,
+body:not(.mode-gui) .rig__desk {
+  display: none;
+}
+body:not(.mode-gui) {
+  background: var(--bg); /* the old page canvas, not the darker room */
+}
+
+/* ---- gui: the monitor ---------------------------------------------- */
 
 .rig {
   height: 100%;
@@ -125,6 +161,28 @@
 }
 
 /* ---- motion (reduced-motion gated, like everything else) ---------- */
+
+/* CRT settle when the monitor takes over (added by ModeManager). */
+.rig__screen.is-powering {
+  animation: rig-power-on 0.55s var(--ease-out);
+}
+@keyframes rig-power-on {
+  0% {
+    filter: brightness(3);
+    transform: scaleY(0.05);
+  }
+  40% {
+    filter: brightness(1.6);
+    transform: scaleY(1.03);
+  }
+  70% {
+    transform: scaleY(0.99);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scaleY(1);
+  }
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .rig__led {

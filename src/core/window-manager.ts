@@ -262,6 +262,16 @@ export class DesktopWindowManager implements WindowManager {
     );
   }
 
+  /** Every open window — lets shells (the GUI taskbar) mirror state. */
+  list(): Array<{ id: string; title: string; el: HTMLElement; minimized: boolean }> {
+    return [...this.records.entries()].map(([id, rec]) => ({
+      id,
+      title: rec.el.querySelector(".window__title")?.textContent ?? id,
+      el: rec.el,
+      minimized: this.minimized.has(id),
+    }));
+  }
+
   /** Unfold a window back from the tray. */
   restore(id: string): void {
     const rec = this.records.get(id);

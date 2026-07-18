@@ -37,6 +37,10 @@ export interface WindowManager {
   get(id: string): WindowInstance | undefined;
   /** Focus the next (1) or previous (-1) open, non-minimized window in MRU order. */
   cycle(dir: 1 | -1): void;
+  minimize(id: string): void;
+  restore(id: string): void;
+  /** Every open window, for shells (taskbar) that mirror manager state. */
+  list(): Array<{ id: string; title: string; el: HTMLElement; minimized: boolean }>;
 }
 
 /** The terminal surface commands write back to. */
