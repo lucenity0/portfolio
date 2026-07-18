@@ -7,3 +7,5 @@ dist-ssr
 .claude/
 .claude/launch.json
 feedbacks
+deploy-preview.sh
+.preview-slug
