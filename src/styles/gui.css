@@ -110,8 +110,8 @@ body:not(.mode-gui) .gui {
 
 .gui__icon-art {
   position: relative;
-  width: 46px;
-  height: 40px;
+  width: 70px;
+  height: 62px;
   border: 2px solid var(--dim);
   display: flex;
   align-items: center;

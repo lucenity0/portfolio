@@ -28,6 +28,35 @@
   flex-direction: column;
   gap: var(--sp-2);
 }
+.contact__item {
+  display: grid;
+  grid-template-columns: 18px 74px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.contact__icon {
+  width: 16px;
+  height: 16px;
+  color: var(--dim);
+  flex: 0 0 auto;
+}
+.contact__item a,
+.contact__values {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.contact__values {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+}
+.contact__secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-2);
+}
 
 /* Launcher list */
 .app-list {

@@ -140,6 +140,13 @@ export function mountGuiWallpaper(layer: HTMLElement): GuiWallpaper {
     px(0, groundTop, W, 1, C.groundLine);
     for (let x = 3; x < W; x += 11) px(x, groundTop + 4 + ((x * 7) % 5), 1, 1, C.far);
 
+    // ---- grass blades, drawn here so they sit behind the cat ----
+    for (const b of blades) {
+      const sway = reduce ? 0 : Math.round(Math.sin(t * 0.0016 + b.ph) * 0.6);
+      px(b.x + sway, groundTop - b.h, 1, b.h, b.h > 3 ? C.far : C.shadow);
+      px(b.x, groundTop - 1, 1, 1, C.far);
+    }
+
     // ---- the sleeping cat, in the grass (left of center) ----
     const catX = Math.max(6, Math.floor(W * 0.16));
     const breathe = reduce ? 0 : Math.sin(t * 0.0022) > 0.3 ? -1 : 0;
@@ -191,12 +198,6 @@ export function mountGuiWallpaper(layer: HTMLElement): GuiWallpaper {
       px(cupX + 5, cupY - 5, 1, 1, C.mid);
     }
 
-    // ---- grass blades, drawn last so they stand in front of the cat ----
-    for (const b of blades) {
-      const sway = reduce ? 0 : Math.round(Math.sin(t * 0.0016 + b.ph) * 0.6);
-      px(b.x + sway, groundTop - b.h, 1, b.h, b.h > 3 ? C.far : C.shadow);
-      px(b.x, groundTop - 1, 1, 1, C.far);
-    }
   };
 
   /* ---- lifecycle ---------------------------------------------------- */

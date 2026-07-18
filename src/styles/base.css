@@ -40,6 +40,21 @@ body {
   background: var(--bg);
 }
 
+body.mode-gui {
+  background-color: #050505;
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  #app::before {
+  display: none;
+}
+}
+
+body:not(.mode-gui) {
+  background: var(--bg);
+}
+
 /* Faint grid + vignette behind everything (ported from index.html).
    Lives inside the screen, not the page — it's what the tube displays. */
 #app::before {
