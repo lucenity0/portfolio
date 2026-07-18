@@ -82,7 +82,8 @@
   height: 18px;
   cursor: pointer;
 }
-.window__btn:hover {
+.window__btn:hover,
+.window__btn:active {
   color: var(--ink);
   border-color: var(--dim);
 }
@@ -332,6 +333,7 @@
   cursor: pointer;
 }
 .tray__folder:hover,
+.tray__folder:active,
 .tray__folder.is-open {
   border-color: var(--dim);
 }
@@ -365,6 +367,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.tray__item:hover {
+.tray__item:hover,
+.tray__item:active {
   border-color: var(--dim);
 }

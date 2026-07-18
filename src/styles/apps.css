@@ -30,7 +30,10 @@
 }
 .contact__item {
   display: grid;
-  grid-template-columns: 18px 74px minmax(0, 1fr);
+  /* `auto` rather than a fixed 74px — grid still aligns the column across
+     rows, but sizes it to the widest label ("instagram" needs ~76px and
+     was clipping by 2px in a narrow window). */
+  grid-template-columns: 18px auto minmax(0, 1fr);
   align-items: start;
   gap: var(--sp-2);
   min-width: 0;
@@ -130,7 +133,9 @@
 }
 .pgrid__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  /* min() so the 210px floor collapses instead of overflowing a window
+     narrower than one track (a 320px phone gives a ~268px content box). */
+  grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr));
   gap: var(--sp-3);
 }
 .pgrid__card {
@@ -308,6 +313,21 @@
 .docs {
   line-height: 1.65;
   color: var(--ink);
+  min-width: 0;
+}
+/* Markdown carries bare URLs, emails, and inline code that have no break
+   opportunities. At a ~268px content box (320px phone) those overflow the
+   window, which is `overflow: hidden`, so they'd just get clipped. Matches
+   the .contact__item precedent above. */
+.docs p,
+.docs li,
+.docs a,
+.docs code,
+.docs blockquote,
+.docs h1,
+.docs h2,
+.docs h3 {
+  overflow-wrap: anywhere;
 }
 /* The pixel-cat avatar in the about docs, tucked beside the intro. */
 .docs__avatar {
@@ -398,6 +418,19 @@
   color: var(--ink);
   font-size: var(--fs-sm);
 }
-.docs__download:hover {
+.docs__download:hover,
+.docs__download:active {
   border-color: var(--dim);
+}
+
+/* ---- small screens ------------------------------------------------ */
+
+@media (max-width: 600px) {
+  /* The floated cat eats ~74px of a ~264px text column, squeezing the intro
+     into a sliver. Let it sit above the prose instead. */
+  .docs__avatar {
+    float: none;
+    display: block;
+    margin: 0 0 var(--sp-2);
+  }
 }

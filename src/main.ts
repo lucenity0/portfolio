@@ -22,6 +22,7 @@ import { Terminal } from "@/core/terminal";
 import { runBootSequence } from "@/core/boot";
 import { mountHero } from "@/core/hero";
 import { ModeManager } from "@/core/mode";
+import { mountViewportTracking } from "@/core/viewport";
 import { buildCommands } from "@/data/commands";
 import { mountGuiDesktop, type GuiDesktop } from "@/apps/gui-desktop";
 
@@ -29,6 +30,9 @@ const mount = document.getElementById("app");
 if (!mount) {
   throw new Error("#app mount element not found");
 }
+
+// Publish visual-viewport geometry before anything lays out against it.
+mountViewportTracking();
 
 const windows = new DesktopWindowManager(mount);
 const registry = new CommandRegistry();

@@ -175,6 +175,10 @@ export class Terminal implements ITerminal {
     input.autocomplete = "off";
     input.autocapitalize = "off";
     input.spellcheck = false;
+    // iOS honours `autocorrect` (non-standard) separately from spellcheck —
+    // without it the keyboard "helpfully" rewrites commands.
+    input.setAttribute("autocorrect", "off");
+    input.setAttribute("enterkeyhint", "go");
 
     field.append(ghost, input);
     row.append(prompt, field);

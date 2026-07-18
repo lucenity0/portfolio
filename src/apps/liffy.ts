@@ -38,7 +38,7 @@ export function openLiffy(ctx: CommandContext): void {
   root.className = "liffy";
 
   const log = document.createElement("div");
-  log.className = "liffy__log";
+  log.className = "liffy__log u-fade-top";
   log.setAttribute("role", "log");
   log.setAttribute("aria-live", "polite");
 
@@ -54,6 +54,9 @@ export function openLiffy(ctx: CommandContext): void {
   input.autocomplete = "off";
   input.autocapitalize = "off";
   input.spellcheck = false;
+  // iOS honours `autocorrect` (non-standard) separately from spellcheck.
+  input.setAttribute("autocorrect", "off");
+  input.setAttribute("enterkeyhint", "go");
   form.append(promptEl, input);
 
   root.append(log, form);
@@ -177,6 +180,10 @@ export function openLiffy(ctx: CommandContext): void {
   });
 
   void say(GREETING);
-  window.setTimeout(() => input.focus(), 60);
+  // Synchronous, not deferred: iOS only raises the on-screen keyboard for a
+  // focus() that runs inside the opening tap's call stack. A setTimeout here
+  // moved DOM focus but left the keyboard shut, so phone users had to tap
+  // the field a second time.
+  input.focus();
   ctx.terminal.print("opened: liffy", "dim");
 }

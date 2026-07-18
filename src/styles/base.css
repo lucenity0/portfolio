@@ -146,6 +146,34 @@ a:hover {
   color: var(--bg);
 }
 
+/* Fades a scroller's top edge so content dissolves under whatever floats
+   above it (the cat) instead of hard-clipping at the scroll box.
+   Apply to the scroller itself — never to a shared ancestor, or the
+   floating element fades along with the text.
+
+   Two knobs, each meaning exactly one thing:
+     --cat-clear  the floating element's footprint. Fully transparent over
+                  this whole span, so nothing shows through the sprite —
+                  a ramp that starts at 0 leaves text ~50% visible at the
+                  sprite's centre, which is the bug being fixed.
+     --fade-ramp  how far below that the fade takes to reach full opacity.
+   Pair with `padding-top: calc(clear + ramp)` so unscrolled content starts
+   below the ramp and is never born faded. */
+.u-fade-top {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent var(--cat-clear, 56px),
+    #000 calc(var(--cat-clear, 56px) + var(--fade-ramp, 28px))
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent var(--cat-clear, 56px),
+    #000 calc(var(--cat-clear, 56px) + var(--fade-ramp, 28px))
+  );
+}
+
 /* Thin monochrome scrollbars inside windows/terminal. */
 * {
   scrollbar-width: thin;

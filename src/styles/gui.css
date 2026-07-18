@@ -21,7 +21,10 @@
   border: 2px solid var(--line);
   cursor: pointer;
 }
-.mode-toggle:hover {
+/* :active is paired with every :hover below — on touch there is no hover,
+   so without it taps give no feedback at all. */
+.mode-toggle:hover,
+.mode-toggle:active {
   color: var(--bg);
   background: var(--ink);
   border-color: var(--ink);
@@ -110,6 +113,7 @@ body:not(.mode-gui) .gui {
   padding: 6px 2px;
 }
 .gui__icon:hover .gui__icon-art,
+.gui__icon:active .gui__icon-art,
 .gui__icon:focus-visible .gui__icon-art {
   background: var(--ink);
   color: var(--bg);
@@ -169,7 +173,8 @@ body:not(.mode-gui) .gui {
   letter-spacing: 0.08em;
   color: var(--dim);
 }
-.gui__icon:hover .gui__icon-label {
+.gui__icon:hover .gui__icon-label,
+.gui__icon:active .gui__icon-label {
   color: var(--ink);
 }
 
@@ -203,6 +208,7 @@ body:not(.mode-gui) .gui {
   cursor: pointer;
 }
 .gui__start:hover,
+.gui__start:active,
 .gui__start[aria-expanded="true"] {
   background: var(--ink);
   color: var(--bg);
@@ -235,6 +241,7 @@ body:not(.mode-gui) .gui {
   letter-spacing: 0.06em;
 }
 .gui__menu-item:hover,
+.gui__menu-item:active,
 .gui__menu-item:focus-visible {
   background: var(--ink);
   color: var(--bg);
@@ -267,7 +274,8 @@ body:not(.mode-gui) .gui {
   border: 2px solid var(--line);
   cursor: pointer;
 }
-.gui__task:hover {
+.gui__task:hover,
+.gui__task:active {
   border-color: var(--dim);
   color: var(--ink);
 }
@@ -321,8 +329,13 @@ body.mode-gui .tray {
   .gui__tray-cat {
     display: none;
   }
+  /* index.html sets viewport-fit=cover, so the raw bottom inset lands in the
+     home-indicator area on notched phones. Shrink it too — at 320px the
+     full-size chip spans ~105px straight across the prompt row. */
   .mode-toggle {
-    left: 10px;
-    bottom: 8px;
+    left: calc(10px + env(safe-area-inset-left, 0px));
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    padding: 5px 8px;
+    letter-spacing: 0.08em;
   }
 }

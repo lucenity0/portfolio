@@ -239,8 +239,19 @@
   transform: translateY(-50%) scale(1);
   pointer-events: auto;
 }
-.catc__plate:hover {
+.catc__plate:hover,
+.catc__plate:active {
   border-color: var(--ink);
+}
+/* The 24-char payoff is a 13px dot — far under the 44px touch minimum.
+   Grow the hit area with a pseudo-element so the cookie keeps its size.
+   Only on the served plate; the unserved one is pointer-events: none. */
+@media (pointer: coarse) {
+  .catc__plate.is-served::after {
+    content: "";
+    position: absolute;
+    inset: -16px; /* 13px + 32px ≈ 45px tap target */
+  }
 }
 @media (prefers-reduced-motion: no-preference) {
   .catc__meter {
@@ -274,12 +285,17 @@
   pointer-events: none;
   z-index: 2;
 }
-/* cornered: the bubble flips below the cat so it stays on screen */
+/* cornered: the bubble flips below the cat so it stays on screen. It then
+   hangs over the text below it, so cap and wrap it rather than letting a
+   nowrap line run off the surface. */
 .catc--corner .catc__bubble {
   bottom: auto;
   top: calc(100% + 8px);
   left: 0;
   transform: none;
+  white-space: normal;
+  max-width: min(200px, 60vw);
+  overflow-wrap: anywhere;
 }
 .catc__bubble.is-visible {
   opacity: 1;
@@ -412,14 +428,31 @@
   }
 }
 /* Short viewports: no centered hero; the cat appears once it corners.
-   (Also kicks in when a phone's on-screen keyboard shrinks the view.) */
+   Gated on the keyboard being shut — an open keyboard drops the viewport
+   under 560px, and this rule firing mid-typing is what hid the cat (and
+   with it the feed-the-cat easter egg). */
 @media (max-height: 560px) {
-  .hero {
+  body:not(.is-keyboard-open) .hero {
     display: none;
   }
-  .catc--hero:not(.catc--corner) {
+  body:not(.is-keyboard-open) .catc--hero:not(.catc--corner) {
     display: none;
   }
+}
+
+/* Keyboard up: the cat is absolutely placed inside #app, which iOS scrolls
+   out of view (it doesn't shrink the layout viewport, it scrolls the
+   document). Pin to the visual viewport instead so the cat — and its feed
+   plate — stay reachable while typing. */
+body.is-keyboard-open .catc--hero.catc--corner {
+  position: fixed;
+  top: calc(var(--vv-top, 0px) + 8px);
+  left: 8px;
+  /* --vv-top updates continuously while the viewport moves, and .catc
+     transitions left/top for 600ms. Without this the cat lags a full
+     transition behind the viewport — visibly chasing it instead of
+     tracking it, and never settling while the keyboard animates. */
+  transition: none;
 }
 
 /* Narrow phones: smaller cat + greeting so nothing clips. */
@@ -431,9 +464,24 @@
     top: calc(14% + 104px);
     width: 92vw;
   }
+  /* The liffy companion had no phone rules at all — shrink it so the chat
+     log isn't paying ~90px of its height for the sprite. Paired with
+     --cat-clear in liffy.css; changing one without the other either clips
+     text or wastes space. */
+  .catc--liffy .cat__art {
+    font-size: 3px;
+  }
+  .catc--liffy.catc--corner .cat__art {
+    font-size: 2px;
+  }
+  /* Press Start 2P is full-width (~1em advance), so the longest greeting is
+     ~300px against a 92vw = 294px box at 320px — and with no break
+     opportunity it can't wrap on its own. */
   .hero__title {
     font-size: 11px;
     text-align: center;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -442,6 +490,11 @@
   font-size: 5px;
   color: var(--dim);
 }
+/* printEl() bypasses .terminal__line, so this <pre> inherits none of the
+   scrollback's wrapping rules — 26 columns of block glyphs with nothing to
+   stop them pushing the surface wide. */
 .terminal__cat {
   margin: var(--sp-2) 0;
+  max-width: 100%;
+  overflow-x: auto;
 }

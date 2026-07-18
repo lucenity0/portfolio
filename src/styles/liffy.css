@@ -8,13 +8,28 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  /* Room the pinned companion cat occupies. Drives BOTH the log's top
+     padding and the fade-mask stop, so the two can never drift apart —
+     and so text can never sit opaque behind the cat.
+
+     Measured against the cat's rendered footprint (art + meter) from the
+     log's top edge: 85px centred, 67px cornered. Undershooting these
+     leaves unfaded text showing through the sprite. */
+  --cat-clear: 88px;
+  --fade-ramp: 28px;
+}
+/* Once the cat corners (first keystroke) it drops to 3px art in the
+   top-left, reclaiming a little. One-way: liffy never restores. */
+.liffy:has(.catc--corner) {
+  --cat-clear: 70px;
 }
 
 .liffy__log {
   flex: 1;
   overflow-y: auto;
   padding: var(--sp-4);
-  padding-top: 76px; /* room for the companion cat pinned up top */
+  /* Below the fade's end, so the first message is never born faded. */
+  padding-top: calc(var(--cat-clear) + var(--fade-ramp));
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
@@ -76,5 +91,16 @@
 @media (max-width: 600px) {
   .liffy__inputrow {
     font-size: 16px;
+  }
+  /* A short window can't spare ~90px of log height for the cat, so shrink
+     the sprite itself here (it had no phone rules at all) and drop the
+     clearance to match the smaller footprint. Values verified by measuring
+     the rendered cat, not guessed. */
+  .liffy {
+    --cat-clear: 72px;
+    --fade-ramp: 20px;
+  }
+  .liffy:has(.catc--corner) {
+    --cat-clear: 54px;
   }
 }
