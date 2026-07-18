@@ -7,6 +7,11 @@
     - Put likely question keywords in the HEADINGS (they're weighted 2x).
       Separate aliases with " / ". The FIRST alias is the topic's "name" —
       keep it a tidy single word where possible (it becomes the label).
+    - End an alias with "!" (e.g. "email!") to make this section the
+      DEFAULT answer for that word when it appears in several sections —
+      "whats his gmail?" should mean contact info, not askcal's Gmail
+      integration. The reply still points at the other section. Keep each
+      keyword in ONE heading only; duplicated aliases fight each other.
     - Keep sections short and conversational — they're spoken verbatim.
     - The engine also: fixes typos against this file's vocabulary, answers
       "which projects use fastapi?" by scanning EVERY section for terms
@@ -48,7 +53,7 @@ your own LLM API key instead of routing through a hosted service. Setup included
 one-command install scripts for both macOS and Windows, and Vertex AI integration
 for Claude model access with prompt caching.
 
-## askcal / ask cal / pulse / scheduler / calendar app / inbox / email assistant / gmail / regret score
+## askcal / ask cal / pulse / scheduler / calendar app / inbox / email assistant / regret score
 
 Askcal (renamed from Pulse) is a context-aware daily scheduler that ranks your
 inbox by *regret*, not urgency — built for the student freelancer juggling
@@ -182,7 +187,7 @@ memory of where things were left. Likes confirmation before big architectural
 changes, and tends to experiment first, then formalize understanding once
 something's proven out.
 
-## contact / reach / email / socials / github / linkedin / instagram / discord / hire / hiring / availability / work with him / gmail
+## contact / reach / email! / gmail! / socials / github / linkedin / instagram / discord / hire / hiring / availability / work with him
 
 Best way in is GitHub — [github.com/lucenity0](https://github.com/lucenity0).
 Email: nafees.s2005@gmail.com (secondary: 0lucenity@gmail.com).

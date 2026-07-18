@@ -51,6 +51,7 @@ const LEAD_SENTENCES = 5; // how much of a topic to open with
 const MORE_SENTENCES = 4; // how much each "tell me more" adds
 const MAX_EXTRACT = 3; // sentences returned for a pointed question
 const CLARIFY_RATIO = 0.8; // runner-up this close to the top → a tie
+const PRIORITY_BONUS = 4.0; // "alias!" — this chunk owns the term on ties
 const AGG_MAX_CHUNKS = 4; // cross-chunk answers cap
 const AGG_DF_MAX = 8; // pivot term may live in at most this many chunks
 
@@ -98,7 +99,8 @@ function tokenize(s: string): string[] {
     .split(/[^a-z0-9+#.]+/)
     .map((t) => t.replace(/^[.]+|[.]+$/g, ""))
     .filter((t) => t.length > 1 && !STOPWORDS.has(t))
-    .map(stem);
+    .map(stem)
+    .filter((t) => !STOPWORDS.has(t)); // "whats" stems to "what" — drop again
 }
 
 const uniq = (xs: string[]): string[] => [...new Set(xs)];
@@ -156,6 +158,14 @@ interface Chunk {
   namePhrases: string[];
   /** Tokens from every heading alias — deliberately authored keywords. */
   aliasTokens: Set<string>;
+  /**
+   * Tokens from aliases marked with a trailing "!" in the heading — the
+   * author's ruling on what MOST askers mean by that word. A term like
+   * "gmail" can appear in several chunks (contact info vs. askcal's Gmail
+   * integration); the priority chunk wins the tie, and the answer points
+   * at the other context instead of silently dropping it.
+   */
+  priorityTokens: Set<string>;
   /** Tokens from the FIRST alias — identifies the topic by its own name. */
   nameTokens: Set<string>;
   /** Clean spoken text (HTML comments + author TODOs removed). */
@@ -270,12 +280,15 @@ function parseChunks(markdown: string): Chunk[] {
   flush();
 
   return raw.map(({ heading: head, body: b }) => {
-    const aliases = uniq(
-      head
-        .split(/\s*[/|]\s*/)
-        .map((a) => normalize(a))
-        .filter(Boolean),
+    // An alias ending in "!" is a PRIORITY alias — detect before normalize
+    // strips the punctuation.
+    const rawAliases = head.split(/\s*[/|]\s*/);
+    const priorityTokens = new Set(
+      rawAliases
+        .filter((a) => /!\s*$/.test(a))
+        .flatMap((a) => tokenize(normalize(a))),
     );
+    const aliases = uniq(rawAliases.map((a) => normalize(a)).filter(Boolean));
     const sentences = toSentences(stripMarkdown(b.join("\n")).trim());
 
     const tf = new Map<string, number>();
@@ -290,8 +303,15 @@ function parseChunks(markdown: string): Chunk[] {
     return {
       label: pickLabel(aliases),
       aliases,
-      namePhrases: aliases.filter(isDistinctivePhrase),
+      // Priority aliases are contested FACET words ("gmail"), not this
+      // chunk's name — granting them the verbatim name-phrase bonus on
+      // top of the priority bonus would double-count and let "does
+      // askcal use gmail?" land on contact instead of askcal.
+      namePhrases: aliases
+        .filter(isDistinctivePhrase)
+        .filter((a) => a.includes(" ") || !priorityTokens.has(stem(a))),
       aliasTokens: new Set(aliases.flatMap((a) => tokenize(a))),
+      priorityTokens,
       nameTokens: new Set(tokenize(aliases[0] ?? "")),
       sentences,
       tf,
@@ -310,6 +330,8 @@ interface Ranked {
   bestIdf: number; // strongest single term match
   idfSum: number; // total IDF of matched terms — 2 weak hits ≠ 1 strong
   phraseHit: boolean;
+  /** The query term this chunk owns via a "!" priority alias, if any. */
+  priorityTerm: string | null;
 }
 
 /** Where we are in the conversation, so follow-ups have something to hold. */
@@ -502,10 +524,31 @@ export class RetrievalEngine implements LiffyEngine {
     }
 
     if (strong) {
-      return this.decorate(
+      const reply = this.decorate(
         this.answerFrom(best!.chunk, best!.index, qTerms, hints),
         notes,
       );
+      // Structured dual-context: a "!" priority alias decided this answer,
+      // but the same word genuinely lives elsewhere too ("gmail" → contact
+      // info, yet askcal integrates Gmail). Say so instead of hiding it.
+      const pTerm = best!.priorityTerm;
+      if (pTerm && !namedTopic) {
+        const rival = ranked.find(
+          (r) =>
+            r.index !== best!.index &&
+            (r.chunk.aliasTokens.has(pTerm) || (r.chunk.tf.get(pTerm) ?? 0) > 0),
+        );
+        if (rival) {
+          const word =
+            low
+              .split(/[^a-z0-9+#.]+/)
+              .filter((w) => w.length > 1)
+              .find((w) => stem(w.replace(/^[.]+|[.]+$/g, "")) === pTerm) ??
+            pTerm;
+          reply.text += `\n\n(${word} also comes up in ${rival.chunk.label} — ask about ${rival.chunk.label} if that's what you meant.)`;
+        }
+      }
+      return reply;
     }
 
     /* stage 10 — graceful degradation */
@@ -536,6 +579,7 @@ export class RetrievalEngine implements LiffyEngine {
     let matched = 0;
     let bestIdf = 0;
     let idfSum = 0;
+    let priorityTerm: string | null = null;
 
     for (const t of qTerms) {
       const idf = this.idf.get(t) ?? 0;
@@ -547,12 +591,16 @@ export class RetrievalEngine implements LiffyEngine {
             (f + K1 * (1 - B + B * (chunk.length / this.avgdl)));
       const bodyScore = idf * tfPart;
       const aliasScore = chunk.aliasTokens.has(t) ? idf * ALIAS_WEIGHT : 0;
+      // "alias!" — the author ruled that this chunk is what most people
+      // mean by this word; outweigh another chunk's body-frequency lead.
+      const priorityScore = chunk.priorityTokens.has(t) ? PRIORITY_BONUS : 0;
+      if (priorityScore > 0) priorityTerm = t;
       if (bodyScore > 0 || aliasScore > 0) {
         matched++;
         idfSum += idf;
         if (idf > bestIdf) bestIdf = idf;
       }
-      score += bodyScore + aliasScore;
+      score += bodyScore + aliasScore + priorityScore;
     }
 
     let phraseHit = false;
@@ -563,7 +611,7 @@ export class RetrievalEngine implements LiffyEngine {
       }
     }
 
-    return { chunk, index, score, matched, bestIdf, idfSum, phraseHit };
+    return { chunk, index, score, matched, bestIdf, idfSum, phraseHit, priorityTerm };
   }
 
   /** Map a mistyped token onto the closest telling vocabulary term.
