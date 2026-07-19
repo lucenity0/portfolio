@@ -1,24 +1,57 @@
 # Liffy's notes on Nafees
 
 <!--
-  This is Liffy's brain. Each `##`/`###` heading is a retrievable chunk;
-  when someone asks a question, Liffy finds the best-matching section and
-  reads it back. Tips:
-    - Put likely question keywords in the HEADINGS (they're weighted 2x).
-      Separate aliases with " / ". The FIRST alias is the topic's "name" —
-      keep it a tidy single word where possible (it becomes the label).
+  This is Liffy's brain. Each `##` heading is a retrievable chunk; when
+  someone asks a question, Liffy finds the best-matching chunk and reads
+  it back (v2 engine: BM25 ranking + typo correction + compound-question
+  splitting + cross-chunk aggregation + a real "did you mean A or B?"
+  clarify loop + follow-up memory). Tips for editing this file:
+
+    - Put likely question keywords in the HEADINGS (they're weighted
+      heavily over body text). Separate aliases with " / ". The FIRST
+      alias is the topic's "name" — keep it a tidy single word where
+      possible; it becomes the chunk's label. IMPORTANT: the fallback
+      "ask me about..." menu only ever lists the FIRST 8 SECTIONS IN
+      FILE ORDER, regardless of what's relevant to the question — so
+      keep the 8 most broadly useful sections (identity, pitch, skills,
+      projects, experience, education, contact, one flagship project)
+      at the very top of this file.
     - End an alias with "!" (e.g. "email!") to make this section the
-      DEFAULT answer for that word when it appears in several sections —
-      "whats his gmail?" should mean contact info, not askcal's Gmail
-      integration. The reply still points at the other section. Keep each
-      keyword in ONE heading only; duplicated aliases fight each other.
-    - Keep sections short and conversational — they're spoken verbatim.
-    - The engine also: fixes typos against this file's vocabulary, answers
-      "which projects use fastapi?" by scanning EVERY section for terms
-      that aren't heading keywords, splits "askcal and tiket?" into two
-      answers, and asks "did you mean A or B?" on genuine ties. So don't
-      over-stuff headings — body words are findable too.
-  Liffy only answers from this file; anything not here → graceful fallback.
+      DEFAULT answer for that word when it's genuinely ambiguous across
+      sections — "whats his gmail?" should mean contact info, not
+      askcal's Gmail integration. The reply still points at the other
+      context instead of hiding it. Use "!" sparingly, only for real
+      conflicts.
+    - NEVER reuse a keyword across two headings' aliases — including
+      indirectly through a multi-word alias. "work history" and a bare
+      "work" alias fight each other exactly as much as repeating "work"
+      outright, because both reduce to the same word once stopwords
+      (a/the/his/etc.) drop out. Before adding an alias, mentally strip
+      stopwords and check the words left over aren't already claimed by
+      another heading.
+    - Body words are findable WITHOUT being aliases — the engine scans
+      every chunk's body too, and answers cross-chunk questions like
+      "which projects use fastapi?" by finding a term that lives in
+      several bodies but isn't anyone's alias. So don't over-stuff
+      headings with tech names; mentioning a stack in prose is usually
+      enough — and keeping tech terms OUT of headings is exactly what
+      lets that cross-chunk trick work at all. Alias a term and it drops
+      out of that pool.
+    - The engine splits "askcal and tiket?" into two answers, and asks
+      "did you mean A or B?" on genuine ties, so don't panic about minor
+      overlap between closely-related sections (e.g. "app" meaning
+      either one specific project or the project list) — the clarify
+      loop catches real ambiguity on its own. Save manual fixes for
+      overlaps that would silently misroute somewhere unhelpful.
+    - Keep sections conversational — they're spoken back verbatim, lead
+      sentences first (opening ~5), the rest held behind "more".
+    - Small talk, "who are you" / "who made you", and the "that's not in
+      my notes" fallback line are hardcoded in retrieval.ts, NOT here —
+      if those need new wording, that's a code change; this file can't
+      reach them.
+  Liffy only answers from this file, and never invents facts that
+  aren't written down below — anything not here gets a graceful
+  fallback instead.
 -->
 
 ## who is nafees / who are you / about / bio / introduction / intro
@@ -27,7 +60,30 @@ I'm Nafees S, online as **lucenity0**. Third-year Computer Science & Engineering
 student at B.M.S. College of Engineering (BMSCE) in Bengaluru, graduating in 2027.
 I split my time between full-stack development, applied ML research, and freelance
 design work under my own brand, Lucenity. Mostly I build things I actually want to
-use, then spend way too long on the details.
+use, then spend way too long on the details. If you're sizing me up for a role,
+ask me why you should hire me — I've got a real pitch, not just a bio.
+
+## hire / hiring / why hire / hire him / why hire him / why should we hire him / why should you hire him / why should i hire him / should we hire him / should i hire him / why choose him / worth hiring / strengths / pitch / value proposition / good fit / qualifications / candidate / stand out / availability
+
+Short version: I ship, not just study. Four solo-built products with real,
+working stacks — Liffy, Askcal, Tiket, and Schedulr — done alongside a full CS
+course load, not class assignments gathering dust in a repo. Tiket's seat
+booking survived a load test at 12,441 concurrent requests with zero double
+bookings, which is a concurrency problem most undergrads never touch. Askcal
+ships JWT auth, live Gmail and Calendar integration, and 79 backend tests
+passing — a real product, not a demo. I move across the whole stack instead of
+staying in one lane: mobile (SwiftUI), backend (FastAPI, PostgreSQL, Celery),
+ML research (CLIP, PPO, LangChain), and design (freelance client work under my
+own brand, Lucenity).
+
+Two research threads are active alongside all that — a CLIP-based hateful-meme
+detector headed for IEEE resubmission, and a PPO agent for adaptive traffic
+signal control — so it's not just shipping speed, there's research depth
+behind it too. I've also led logistics for BMSCE's Phase Shift tech fest and
+managed the design team for Utsav, so team and event coordination aren't new
+either. None of this covers a specific start date, compensation range, or
+relocation preference — that's a direct conversation, so just reach out. Ask
+me about any project by name for the specifics, or ask for contact details.
 
 ## skills / tech stack / technologies / languages / programming / what do you know / stack
 
@@ -42,16 +98,31 @@ Tools: Git/GitHub, Docker, AWS EC2, Xcode, Figma, Jupyter Notebook, VS Code.
 
 The big ones: **Liffy** (this — an AI code review tool), **Askcal** (an AI daily
 scheduler), **Tiket** (a ticket booking system), and **Schedulr** (an OS concepts
-simulator). Ask about any of them by name and I'll go deeper.
+simulator). Ask about any of them by name and I'll go deeper — or ask why you
+should hire me for the highlight reel across all four.
 
-## liffy / what is liffy / this project / this tool / code review
+## experience / jobs / internships / career / roles
 
-You're looking at it. Liffy is an open-source, self-hosted AI-powered code review
-tool (`lucenity0/Liffy`). Built on FastAPI, React/TypeScript, PostgreSQL, Redis,
-Celery, ChromaDB, and LangChain, with GitHub OAuth for repo access — and you bring
-your own LLM API key instead of routing through a hosted service. Setup included
-one-command install scripts for both macOS and Windows, and Vertex AI integration
-for Claude model access with prompt caching.
+Graphic Designer at Clearly Blue Pvt Ltd — still affiliated with them on a
+freelance basis. Beyond that, most of the hands-on experience comes from
+research (the hateful-meme and traffic-signal projects), freelance design work
+under Lucenity, and shipping full products solo (Liffy, Askcal, Tiket,
+Schedulr). Currently prepping for placements and research program applications.
+
+## education / study / college / university / school / degree / cgpa / gpa / graduate / graduation
+
+B.E. in Computer Science & Engineering at B.M.S. College of Engineering
+(BMSCE), Bengaluru — CGPA 8.21, expected June 2027. Before that, Narayana PU
+College, 12th, Karnataka State Board, 94.33%, May 2023.
+
+## contact / reach / email! / gmail! / socials / github / linkedin / instagram / discord / get in touch / reach out / resume / cv
+
+Best way in is GitHub — [github.com/lucenity0](https://github.com/lucenity0).
+Email: nafees.s2005@gmail.com (secondary: 0lucenity@gmail.com).
+Discord: lucenity. Instagram: @lucenity_.
+LinkedIn: https://www.linkedin.com/in/nafees-s-6770712b0/
+No separate resume or CV link lives in these notes — email him directly and
+he'll send one over.
 
 ## askcal / ask cal / pulse / scheduler / calendar app / inbox / email assistant / regret score
 
@@ -84,6 +155,15 @@ adaptive scheduling (chronotype, weight nudging) aren't built yet on purpose.
 Pre-open-source hardening — refresh-token encryption at rest, PKCE on the
 OAuth flow, CI, a LICENSE — is the current blocker before it's safe to
 self-host publicly.
+
+## liffy / what is liffy / this project / this tool / code review
+
+You're looking at it. Liffy is an open-source, self-hosted AI-powered code review
+tool (`lucenity0/Liffy`). Built on FastAPI, React/TypeScript, PostgreSQL, Redis,
+Celery, ChromaDB, and LangChain, with GitHub OAuth for repo access — and you bring
+your own LLM API key instead of routing through a hosted service. Setup included
+one-command install scripts for both macOS and Windows, and Vertex AI integration
+for Claude model access with prompt caching.
 
 ## tiket / ticket / ticket booking / booking system / seats / concurrency
 
@@ -140,38 +220,14 @@ black-box problem in AI-driven infrastructure. Includes a real-time
 bidirectional SUMO–TraCI communication loop (IoT-style feedback), with
 constrained emergency preemption and priority queuing.
 
-## education / study / college / university / school / degree / cgpa / gpa / graduate / graduation
-
-B.E. in Computer Science & Engineering at B.M.S. College of Engineering
-(BMSCE), Bengaluru — CGPA 8.21, expected June 2027. Before that, Narayana PU
-College, 12th, Karnataka State Board, 94.33%, May 2023.
-
-## location / living / house / address / lives where / where does he live / visit / wherabouts / meet him / meeting
-
-Nafees's location is private.. rather i don't know his whereabouts too. For now, he resides as me in this pixel world !
-
-## age / how old / birthday / born / birthdate
-
-His notes don't say — he keeps numbers like that off the record. All I can
-tell you is he's a third-year CSE student graduating in 2027; you can do the
-math from there if you really must.
-
-## experience / jobs / internships / work history / roles
-
-Graphic Designer at Clearly Blue Pvt Ltd — still affiliated with them on a
-freelance basis. Beyond that, most of the hands-on experience comes from
-research (the hateful-meme and traffic-signal projects), freelance design work
-under Lucenity, and shipping full products solo (Liffy, Askcal, Tiket,
-Schedulr). Currently prepping for placements and research program applications.
-
-## leadership / fest / event / phase shift / utsav / coordinator / campus
+## leadership / fest / event / phase shift / utsav / coordinator / campus / extracurricular
 
 Senior Coordinator for Phase Shift 2025 at BMSCE (2024–2025), co-leading
 logistics for the college's annual technical fest. Before that, Junior
 Coordinator for Utsav 2025, managing the design team and on-ground event
 operations.
 
-## freelance / design work / lucenity brand / clients / lucenity.dev
+## freelance / design / lucenity brand / clients / lucenity.dev
 
 Runs freelance/client design work under the Lucenity brand (lucenity.dev),
 mostly using prompt engineering with AI design tools as the working method.
@@ -179,20 +235,13 @@ Brand identity itself is Cormorant Garamond wordmark, a warm ink/off-white/
 starlight-gold palette, and a star-chart crosshair emblem, built to hold up
 across any application background.
 
-## how he works / workflow / build process / dev habits
+## how he works / workflow / build process / dev habits / approach
 
 Prefers phased development with git checkpoints at each phase boundary,
 verifying state directly before resuming a coding session rather than trusting
 memory of where things were left. Likes confirmation before big architectural
 changes, and tends to experiment first, then formalize understanding once
 something's proven out.
-
-## contact / reach / email! / gmail! / socials / github / linkedin / instagram / discord / hire / hiring / availability / work with him
-
-Best way in is GitHub — [github.com/lucenity0](https://github.com/lucenity0).
-Email: nafees.s2005@gmail.com (secondary: 0lucenity@gmail.com).
-Discord: lucenity. Instagram: @lucenity_.
-LinkedIn: https://www.linkedin.com/in/nafees-s-6770712b0/
 
 ## this site / website / how was this site made / terminal os / lucenityos / this portfolio
 
@@ -205,6 +254,16 @@ Even I live inside it — a retrieval bot with no LLM, reading straight from
 Nafees's notes. There are also a few commands the help menu won't admit to;
 the sleeping cat murmurs hints about them if you leave it alone long enough.
 It's live at me.lucenity.dev.
+
+## location / living / house / address / lives where / where does he live / visit / wherabouts / meet him / meeting
+
+Nafees's location is private.. rather i don't know his whereabouts too. For now, he resides as me in this pixel world !
+
+## age / how old / birthday / born / birthdate
+
+His notes don't say — he keeps numbers like that off the record. All I can
+tell you is he's a third-year CSE student graduating in 2027; you can do the
+math from there if you really must.
 
 ## hobbies / interests / fun / outside of work / art / artist
 

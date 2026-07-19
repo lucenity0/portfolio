@@ -26,8 +26,14 @@ const GREETING =
 
 const MEOW_RE = /^me+o+w+[\s.!?~]*$/i;
 const COOKIE_RE = /\b(cookie|treat)\b/i;
+const COOKIE_REPLY =
+  "purrrr. (translation: thanks for the treat! i like you.)";
 const MEOW_REPLY =
   "meow. mrrp. purrrr. (translation: hi. i like you. bring snacks.)";
+const PET_RE = /\b(pet|stroke|scratch)\b/i;
+const STARE_RE = /\b(stare|look|watch)\b/i;
+const STARE_REPLY = "stare. stare. stare. (translation: i see you.)";
+const PET_REPLY = "purrrr. (translation: thanks for the pets!)";
 
 export function openLiffy(ctx: CommandContext): void {
   const eng = getEngine();
@@ -129,6 +135,45 @@ export function openLiffy(ctx: CommandContext): void {
       history.push({ role: "liffy", text: MEOW_REPLY });
       companion.hop();
       await say(MEOW_REPLY);
+      busy = false;
+      input.disabled = false;
+      input.focus();
+      return;
+    }
+
+    if (COOKIE_RE.test(q)) {
+      const receipt = addLine("", "liffy__who--bot");
+      receipt.classList.add("liffy__thinking");
+      receipt.textContent = "✳ thought for 0.0s (instinct)";
+      history.push({ role: "liffy", text: COOKIE_REPLY });
+      companion.hop();
+      await say(COOKIE_REPLY);
+      busy = false;
+      input.disabled = false;
+      input.focus();
+      return;
+    }
+
+    if (STARE_RE.test(q)) {
+      const receipt = addLine("", "liffy__who--bot");
+      receipt.classList.add("liffy__thinking");
+      receipt.textContent = "✳ thought for 0.0s (instinct)";
+      history.push({ role: "liffy", text: STARE_REPLY });
+      companion.hop();
+      await say(STARE_REPLY);
+      busy = false;
+      input.disabled = false;
+      input.focus();
+      return;
+    }
+
+    if (PET_RE.test(q)) {
+      const receipt = addLine("", "liffy__who--bot");
+      receipt.classList.add("liffy__thinking");
+      receipt.textContent = "✳ thought for 0.0s (instinct)";
+      history.push({ role: "liffy", text: PET_REPLY });
+      companion.hop();
+      await say(PET_REPLY);
       busy = false;
       input.disabled = false;
       input.focus();

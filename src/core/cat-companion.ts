@@ -42,12 +42,21 @@ const HERO_MURMURS = [
   "...ctrl+] ... windows go round... zzz",
   "zzz... liffy keeps secrets too...",
   "...feed me... 24 keys... zzz",
+  "i can brew coffee... but i like cookies more... zzz",
+  "zzz... i know secrets... ask me... zzz",
+  "mrrp... coffee... i like it... zzz",
 ];
 const LIFFY_MURMURS = [
   "mrrp... say meow... i dare you...",
   "zzz... cookie... just type it...",
   "...hold me... one whole second... prrr",
   "zzz... stare at me... see what happens...",
+  "...pet me... i like it... prrrr...",
+  "...i know secrets... ask me... zzz",
+  "cookie... treat... feed me... zzz",
+  "mrrp... coffee... i like it... zzz",
+  "zzz... secrets... ask me... zzz",
+
 ];
 
 export type CompanionMode = "hero" | "liffy";

@@ -166,7 +166,231 @@ export function buildCommands(): Command[] {
           return PROJECTS.map((p) => p.slug);
         return [];
       },
-    }
+    },
+        // --- liffy easter eggs ---
+
+    {
+      name: "cookie",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("...sniff sniff...", "dim");
+        ctx.terminal.print("I smell cookies!! Keep typing... maybe one will appear after 24 characters... =^.^=", "sub");
+      },
+    },
+
+    {
+      name: "cookies",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("nom...? not yet! Keep typing until one shows up!", "dim");
+      },
+    },
+
+    {
+      name: "biscuit",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("cookies, biscuits... I'll happily accept either :3", "dim");
+      },
+    },
+
+    {
+      name: "sleep",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("*yaaawn...*", "dim");
+        ctx.terminal.print(
+          "I might get sleepy if you don't talk to me... zzz... OH! sorry, I'm still awake!!",
+          "sub",
+        );
+      },
+    },
+
+    {
+      name: "sleepy",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("five more minutes...", "dim");
+      },
+    },
+
+    {
+      name: "nap",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("the cat approves of naps. =^..^=", "dim");
+      },
+    },
+
+    {
+      name: "yawn",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("*yaaawn... stretches dramatically*", "dim");
+      },
+    },
+
+    {
+      name: "laydown",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("already lying down. productivity is optional.", "dim");
+      },
+    },
+
+    {
+      name: "sheely",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("sheely detected... initiating maximum coziness.", "dim");
+      },
+    },
+
+    {
+      name: "sweepy",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("sweepy... very sweepy...", "dim");
+      },
+    },
+
+    {
+      name: "sleeping",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("I'm definitely not sleeping... probably.", "dim");
+      },
+    },
+
+    {
+      name: "slep",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("slep mode activated.", "dim");
+      },
+    },
+
+    {
+      name: "nom",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("nom nom... thanks for the cookies stranger! =^.^=", "dim");
+      },
+    },
+
+    {
+      name: "nomnom",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("nomnomnom!! delicious.", "dim");
+      },
+    },
+
+    {
+      name: "nomnomnom",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("*crumbs everywhere*", "dim");
+      },
+    },
+
+    {
+      name: "coffee",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print(
+          "y-yawnn... coffee is my favourite thing. *sips coffee* ☕",
+          "dim",
+        );
+      },
+    },
+
+    {
+      name: "espresso",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("one tiny cup, infinite energy.", "dim");
+      },
+    },
+
+    {
+      name: "latte",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("latte art attempt #247... still looks like a blob.", "dim");
+      },
+    },
+
+    {
+      name: "iced",
+      usage: "iced latte",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        if (ctx.args[0] === "latte") {
+          ctx.terminal.print("cold, creamy, perfect.", "dim");
+        }
+      },
+    },
+
+    {
+      name: "cappuccino",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("extra foam please ☁️", "dim");
+      },
+    },
+
+    {
+      name: "mocha",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        ctx.terminal.print("coffee + chocolate = perfection.", "dim");
+      },
+    },
+
+    {
+      name: "barista",
+      hidden: true,
+      summary: "",
+      run: (ctx) => {
+        const recipes = [
+          "☕ Vanilla Latte\n  • 1 espresso\n  • 200ml steamed milk\n  • 20ml vanilla syrup",
+          "☕ Caramel Latte\n  • 1 espresso\n  • 20ml caramel syrup\n  • steamed milk",
+          "☕ Iced Mocha\n  • 1 espresso\n  • chocolate syrup\n  • cold milk\n  • ice",
+          "☕ Honey Cinnamon Latte\n  • espresso\n  • 1 tbsp honey\n  • pinch of cinnamon\n  • steamed milk",
+        ];
+
+        const recipe = recipes[Math.floor(Math.random() * recipes.length)];
+
+        ctx.terminal.print(
+          "I have excellent barista skills! Feed me more cookies and I'll share more recipes...",
+          "dim",
+        );
+        ctx.terminal.print(recipe, "sub");
+      },
+    },
+    
   );
   return commands;
 }
