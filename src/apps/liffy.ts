@@ -61,6 +61,18 @@ export function openLiffy(ctx: CommandContext): void {
 
   root.append(log, form);
 
+  // Tapping the transcript re-focuses the input — the same "always ready"
+  // affordance the terminal surface has (terminal.ts, .terminal__surface).
+  // Without it the phone keyboard was unrecoverable: `ask` disables the input
+  // while a reply streams, which drops the keyboard, and the re-focus after
+  // it lands is async — iOS only raises the keyboard from a real gesture. The
+  // input is a thin row on the window's bottom edge and nothing else in the
+  // chat takes focus, so liffy was typeable exactly once.
+  log.addEventListener("click", () => {
+    if ((window.getSelection()?.toString() ?? "") !== "") return;
+    input.focus();
+  });
+
   const scroll = () => {
     log.scrollTop = log.scrollHeight;
   };

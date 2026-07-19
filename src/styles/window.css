@@ -69,6 +69,13 @@
 .window__controls {
   display: inline-flex;
   gap: var(--sp-2);
+  /* Must out-stack .window__resize (z-index 2). The n/ne handles overlay the
+     title bar and, under (pointer: coarse), land on the close button — which
+     swallowed the tap and started a resize instead. Only reachable with a
+     mouse otherwise. The body clears the handles via --window-gutter, but the
+     bar sits above that reservation, so it needs its own stacking fix. */
+  position: relative;
+  z-index: 3;
 }
 .window__btn {
   appearance: none;
@@ -165,8 +172,23 @@
   bottom: -2px;
   right: -2px;
 }
-/* Fatter grab targets on touch screens. */
+/* Fatter grab targets on touch screens.
+   .window is `overflow: hidden`, so a handle can only grow *inward* — the part
+   past the border is clipped and unhittable. That puts every fattened handle on
+   top of body content at z-index 2, where enableResize's pointerdown kills the
+   tap with preventDefault + stopPropagation. So the body's reserved inset
+   (--window-gutter) has to grow to stay ahead of the handles' inward reach:
+     edges   18px @ -6px  → 12px inward
+     corners 20px @ -6px  → 14px inward
+   Both clear the 16px gutter below. Keep that invariant if you retune these. */
 @media (pointer: coarse) {
+  :root {
+    --window-gutter: 16px;
+  }
+  /* Left edge too — the base rule only reserves right/bottom. */
+  .window__body {
+    margin-left: var(--window-gutter);
+  }
   .window__resize--e,
   .window__resize--w {
     width: 18px;
@@ -191,8 +213,8 @@
   .window__resize--nw,
   .window__resize--se,
   .window__resize--sw {
-    width: 28px;
-    height: 28px;
+    width: 20px;
+    height: 20px;
   }
   .window__resize--nw,
   .window__resize--sw {

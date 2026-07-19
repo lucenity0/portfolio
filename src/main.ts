@@ -82,6 +82,7 @@ registry.register({
 
 void runBootSequence(terminal).then(() => {
   const hero = mountHero(mount);
+  terminal.bindCatOverlap(hero.companion.el);
   terminal.onTyping = (len) => hero.companion.onTyping(len);
   terminal.onSend = () => hero.companion.onSend();
   terminal.onClear = () => hero.restore();

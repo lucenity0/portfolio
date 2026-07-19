@@ -338,11 +338,17 @@ export class DesktopWindowManager implements WindowManager {
       el.style.top = `${Math.min(Math.max(ny, 0), this.area.h - 40)}px`;
     };
 
+    // Also the pointercancel handler: WebKit fires cancel *instead of* up
+    // whenever it takes the gesture over (edge swipe, multi-touch). Cleaning
+    // up only on pointerup left `dragging` true with the window-level
+    // listeners still attached, so every later touch anywhere re-entered
+    // onMove — the window jumped and the tap never reached its target.
     const onUp = (e: PointerEvent) => {
       dragging = false;
       handle.releasePointerCapture?.(e.pointerId);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
     };
 
     handle.addEventListener("pointerdown", (e: PointerEvent) => {
@@ -358,6 +364,7 @@ export class DesktopWindowManager implements WindowManager {
       handle.setPointerCapture?.(e.pointerId);
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
     });
   }
 
@@ -426,14 +433,17 @@ export class DesktopWindowManager implements WindowManager {
           el.style.width = `${w}px`;
           el.style.height = `${h}px`;
         };
+        // Bound to pointercancel as well as pointerup — see enableDrag.
         const onUp = (ev: PointerEvent) => {
           handle.releasePointerCapture?.(ev.pointerId);
           window.removeEventListener("pointermove", onMove);
           window.removeEventListener("pointerup", onUp);
+          window.removeEventListener("pointercancel", onUp);
         };
         handle.setPointerCapture?.(e.pointerId);
         window.addEventListener("pointermove", onMove);
         window.addEventListener("pointerup", onUp);
+        window.addEventListener("pointercancel", onUp);
       });
     }
   }

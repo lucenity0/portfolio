@@ -4,6 +4,18 @@
  * ------------------------------------------------------------------ */
 
 .terminal {
+  /* Footprints of the two fixed things that sit over this column. Reserved as
+     outer padding below 1080px (see the query further down) so the surface is
+     pushed clear of them rather than drawn under them.
+
+     Corner cat: 16px top offset + a 16-row x 4px sprite + breathing room. The
+     cornered art is 4px at every width — `.catc--hero.catc--corner .cat__art`
+     outranks the 5px phone rule — so this constant holds everywhere. */
+  --cat-corner-clear: calc(16px + 64px + 20px);
+  /* [ gui ] chip: 12px bottom offset + a ~30px box (11px text + 12px padding
+     + 4px border) + breathing room. */
+  --toggle-clear: calc(12px + 30px + 12px);
+
   position: absolute;
   inset: 0;
   display: flex;
@@ -30,6 +42,32 @@
   color: var(--ink);
   padding-right: var(--sp-2);
   scrollbar-width: none; /* firefox */
+}
+.terminal__scroll.is-cat-overlapping {
+  /* The stops are supplied by Terminal.bindCatOverlap(). The mask only exists
+     while the cat's sprite really intersects this scrollport on both axes, so
+     ordinary scrollback is never faded just because the viewport is short or
+     the cat happens to share a row with a column it sits well clear of.
+     The binder guarantees `start >= ramp`, so the upper stops can never
+     collapse onto each other and hard-cut a line of text. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(var(--cat-overlap-start) - var(--cat-overlap-ramp)),
+    transparent var(--cat-overlap-start),
+    transparent var(--cat-overlap-end),
+    #000 calc(var(--cat-overlap-end) + var(--cat-overlap-ramp)),
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(var(--cat-overlap-start) - var(--cat-overlap-ramp)),
+    transparent var(--cat-overlap-start),
+    transparent var(--cat-overlap-end),
+    #000 calc(var(--cat-overlap-end) + var(--cat-overlap-ramp)),
+    #000 100%
+  );
 }
 .terminal__scroll::-webkit-scrollbar {
   display: none; /* chrome/safari */
@@ -86,38 +124,44 @@
   padding: 0;
 }
 
+/* Medium windows: reserve the cat and the [ gui ] chip.
+
+   The surface is a centred `min(760px, 100%)` column, so its left edge sits at
+   (100vw - 760px) / 2 — which only clears the cornered cat's right edge (x=141)
+   above 760 + 2*141 = 1042px. Below that the cat and the fixed chip both land
+   on the column. The surface is `max-height: 100%` and bottom-anchored, so
+   outer padding caps how far it can grow in each direction and the text is
+   pushed clear instead of being masked away (top) or run over (bottom).
+   1080px leaves the same ~20px slack used in the footprints themselves, so the
+   runtime mask never fires faintly right at the boundary — past this width
+   bindCatOverlap() correctly finds no horizontal overlap at all. */
+@media (max-width: 1080px) {
+  .terminal {
+    padding-top: var(--cat-corner-clear);
+    padding-bottom: var(--toggle-clear);
+  }
+}
+
 /* Small screens: tighter frame; the input row goes to 16px (ghost and
    input together, so click-to-caret stays aligned) which also stops
-   iOS auto-zooming the focused field. */
+   iOS auto-zooming the focused field. Must stay after the 1080px query —
+   media queries add no specificity, so source order is what makes these
+   tighter side paddings win. */
 @media (max-width: 600px) {
-  /* Reserve the bottom-left strip the fixed .mode-toggle occupies. The
-     surface is `margin: auto auto 0` (bottom-anchored), so outer padding
-     lifts the whole prompt row clear of the button rather than overlapping. */
+  /* Same two reservations, but the chip shrinks here (gui.css drops it to
+     ~27px at bottom: 8px + the safe-area inset), so the bottom value is its
+     own rather than --toggle-clear. */
   .terminal {
     padding: 10px;
+    padding-top: var(--cat-corner-clear);
     padding-bottom: calc(44px + env(safe-area-inset-bottom, 0px));
   }
-  /* Phone-width makes the surface full-bleed, so the cornered cat at
-     left:16px now sits over the scrollback. On desktop the surface is a
-     centred 760px column and the cat falls outside it — no fade needed, and
-     no compositing layer forced on the primary scroller. Same gradient as
-     .u-fade-top (base.css); declared inline so it stays inside the query. */
+  /* The cat overlap mask is added by Terminal.bindCatOverlap() only when
+     the cat really crosses this scrollport. Do not attach a fixed phone
+     gradient here: it fades valid boot output whenever the viewport is
+     short, even when the cat is nowhere near the terminal. */
   .terminal__scroll {
     font-size: var(--fs-sm);
-    --cat-clear: 72px;
-    --fade-ramp: 24px;
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent var(--cat-clear),
-      #000 calc(var(--cat-clear) + var(--fade-ramp))
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent var(--cat-clear),
-      #000 calc(var(--cat-clear) + var(--fade-ramp))
-    );
   }
   .terminal__input-row {
     font-size: 16px;

@@ -259,6 +259,113 @@ export class Terminal implements ITerminal {
     this.inputEl.focus();
   }
 
+  /**
+   * Fade only the slice of scrollback physically covered by the hero cat.
+   *
+   * The terminal and the cat are siblings, so a CSS-only top fade cannot
+   * know whether their boxes overlap after a phone resize. Keeping the
+   * geometry here also lets the mask follow the cat's animated move to and
+   * from its corner position.
+   */
+  bindCatOverlap(catEl: HTMLElement): () => void {
+    let frame: number | null = null;
+    let refreshUntil = 0;
+
+    // Measure the sprite, not the companion root: `.catc` is a flex column of
+    // bubble + cat + meter + plate, so its box extends far below the visible
+    // art and would erase a band of text the cat never actually covers.
+    const spriteEl = catEl.querySelector<HTMLElement>(".cat__art") ?? catEl;
+
+    const clear = () => {
+      this.scrollEl.classList.remove("is-cat-overlapping");
+      this.scrollEl.style.removeProperty("--cat-overlap-start");
+      this.scrollEl.style.removeProperty("--cat-overlap-end");
+      this.scrollEl.style.removeProperty("--cat-overlap-ramp");
+    };
+
+    const refresh = () => {
+      const scrollRect = this.scrollEl.getBoundingClientRect();
+      const catRect = spriteEl.getBoundingClientRect();
+      const top = Math.max(scrollRect.top, catRect.top);
+      const bottom = Math.min(scrollRect.bottom, catRect.bottom);
+      // The surface is a centred column while the cornered cat hugs the left
+      // edge, so on a wide viewport they share rows but never a column. Fading
+      // on vertical overlap alone wipes text the cat is nowhere near.
+      const overlapX =
+        Math.min(scrollRect.right, catRect.right) -
+        Math.max(scrollRect.left, catRect.left);
+      const overlapY = bottom - top;
+
+      if (overlapY <= 0 || overlapX <= 0 || scrollRect.height <= 0) {
+        clear();
+        return;
+      }
+
+      // Ramp off the sprite's own height, not the clipped overlap: the clipped
+      // value shrinks to its floor exactly when most of the cat sits above the
+      // scrollport, hardening the edge precisely where it shows most.
+      const ramp = Math.min(24, Math.max(10, catRect.height * 0.22));
+      // Keep a ramp's worth of room above the transparent band. Letting `start`
+      // reach 0 collapses the upper stops onto each other, which steps opacity
+      // from 1 to 0 at the scroll box edge and slices through a glyph row.
+      const start = Math.max(ramp, top - scrollRect.top);
+      const end = Math.min(scrollRect.height, bottom - scrollRect.top);
+
+      if (end <= start) {
+        clear();
+        return;
+      }
+
+      this.scrollEl.style.setProperty("--cat-overlap-start", `${start}px`);
+      this.scrollEl.style.setProperty("--cat-overlap-end", `${end}px`);
+      this.scrollEl.style.setProperty("--cat-overlap-ramp", `${ramp}px`);
+      this.scrollEl.classList.add("is-cat-overlapping");
+    };
+
+    const keepFresh = (duration = 900) => {
+      refreshUntil = Math.max(refreshUntil, performance.now() + duration);
+      if (frame !== null) return;
+
+      const tick = () => {
+        refresh();
+        if (performance.now() < refreshUntil) {
+          frame = window.requestAnimationFrame(tick);
+        } else {
+          frame = null;
+        }
+      };
+      frame = window.requestAnimationFrame(tick);
+    };
+
+    const onViewportChange = () => keepFresh(300);
+    const onCatTransition = () => keepFresh(900);
+    const visualViewport = window.visualViewport;
+    const resizeObserver = new ResizeObserver(() => keepFresh(120));
+
+    window.addEventListener("resize", onViewportChange);
+    visualViewport?.addEventListener("resize", onViewportChange);
+    catEl.addEventListener("transitionrun", onCatTransition);
+    catEl.addEventListener("transitionstart", onCatTransition);
+    catEl.addEventListener("transitionend", onCatTransition);
+    catEl.addEventListener("transitioncancel", onCatTransition);
+    resizeObserver.observe(this.scrollEl);
+    resizeObserver.observe(catEl);
+    if (spriteEl !== catEl) resizeObserver.observe(spriteEl);
+    refresh();
+
+    return () => {
+      window.removeEventListener("resize", onViewportChange);
+      visualViewport?.removeEventListener("resize", onViewportChange);
+      catEl.removeEventListener("transitionrun", onCatTransition);
+      catEl.removeEventListener("transitionstart", onCatTransition);
+      catEl.removeEventListener("transitionend", onCatTransition);
+      catEl.removeEventListener("transitioncancel", onCatTransition);
+      resizeObserver.disconnect();
+      if (frame !== null) window.cancelAnimationFrame(frame);
+      clear();
+    };
+  }
+
   // ---- extras used by the boot sequence ----
 
   /** Type a line character-by-character (reduced-motion aware). */

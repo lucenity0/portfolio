@@ -120,6 +120,9 @@
   left: 50%;
   top: 14%;
   transform: translateX(-50%);
+  /* When a short viewport makes the terminal rise into the hero, the cat
+     remains the foreground object and the terminal fades beneath it. */
+  z-index: calc(var(--z-terminal) + 1);
 }
 .catc--hero .cat__art {
   font-size: 7px;
