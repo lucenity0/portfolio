@@ -20,33 +20,33 @@ together and [docs/backlog.md](docs/backlog.md) for the granular issue list.
 
 ## Phase 1 — Terminal core
 
-- [ ] Flesh out the command parser (quoting, unknown-command hints, `--flags`)
-- [ ] Command history polish (persist to `localStorage`, de-dupe)
-- [ ] Tab-completion for command names + project slugs
-- [ ] Richer boot / BIOS sequence with personality
-- [ ] Custom block-caret tracking the real cursor position mid-string
+- [x] Flesh out the command parser (quoting, unknown-command hints, `--flags`)
+- [x] Command history polish (persist to `localStorage`, de-dupe)
+- [x] Tab-completion for command names + project slugs
+- [x] Richer boot / BIOS sequence with personality
+- [x] Custom block-caret tracking the real cursor position mid-string
 
 ## Phase 2 — Window manager
 
-- [ ] Minimize + a bottom dock for minimized windows
-- [ ] Maximize / restore
-- [ ] Resize handles
-- [ ] Focus/blur styling polish + keyboard focus cycling (e.g. ⌘\`)
-- [ ] Window open/close power-on/off animations (CRT flicker)
+- [x] Minimize + a bottom dock for minimized windows
+- [x] Maximize / restore
+- [x] Resize handles
+- [x] Focus/blur styling polish + keyboard focus cycling (e.g. ⌘\`)
+- [x] Window open/close power-on/off animations (CRT flicker)
 
 ## Phase 3 — Apps & content
 
-- [ ] Real `about` (bio, timeline, pixel avatar)
-- [ ] `projects` grid with thumbnails + tags/filter
-- [ ] `project-window`: live loading bar, error/fallback states, per-project embed config
+- [x] Real `about` (bio, timeline, pixel avatar)
+- [x] `projects` grid with thumbnails + tags/filter
+- [x] `project-window`: live loading bar, error/fallback states, per-project embed config
 - [ ] Real project catalogue in `data/projects.ts` (replace placeholders)
-- [ ] `contact` with real handles
-- [ ] Optional: `skills`, `resume`, easter eggs
+- [x] `contact` with real handles
+- [x] Optional: `skills`, `resume`, easter eggs
 
 ## Phase 4 — Polish & launch
 
 - [ ] Responsive / mobile terminal + windows (touch drag, on-screen keyboard)
-- [ ] Accessibility pass (keyboard nav, ARIA, reduced-motion audit, focus traps)
-- [ ] SEO/OG meta, favicon, social preview image
+- [x] Accessibility pass (keyboard nav, ARIA, reduced-motion audit, focus traps)
+- [x] SEO/OG meta, favicon, social preview image
 - [ ] **Launch:** point GitHub Pages at the portfolio build (Action or merge to `main`),
       keep `CNAME` + `.nojekyll`, verify `me.lucenity.dev`
