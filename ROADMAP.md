@@ -9,7 +9,7 @@ together and [docs/backlog.md](docs/backlog.md) for the granular issue list.
 
 ---
 
-## Phase 0 — Foundation ✅ (done today)
+## Phase 0 — Foundation (done today)
 
 - [x] `dev` branch created (main untouched)
 - [x] Vite + TypeScript scaffold, split tsconfig, `@/` alias
