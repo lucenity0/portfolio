@@ -64,6 +64,10 @@ const syncShell = () => {
     gui = null;
     terminal.focusInput();
   }
+  // The taskbar's reserved inset (or its removal) doesn't always trigger
+  // #app's ResizeObserver on its own — force windows to re-clamp against
+  // the shell that's actually mounted now, not whatever was true before.
+  windows.remeasure();
 };
 mode.onChange(syncShell);
 syncShell(); // honour a persisted "gui" choice on load

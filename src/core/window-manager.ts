@@ -80,7 +80,13 @@ export class DesktopWindowManager implements WindowManager {
     };
   }
 
-  private remeasure(): void {
+  /**
+   * Public so shells can force a recompute right after swapping chrome
+   * (tty ⇄ gui) instead of waiting on the ResizeObserver to notice — see
+   * `syncShell` in main.ts and `toggleMaximize` below, both of which can
+   * run against a stale `this.area` otherwise.
+   */
+  remeasure(): void {
     this.measure();
     this.reclampAll();
   }
@@ -215,6 +221,7 @@ export class DesktopWindowManager implements WindowManager {
   toggleMaximize(id: string): void {
     const rec = this.records.get(id);
     if (!rec || this.minimized.has(id)) return;
+    this.measure(); // the shell may have swapped its chrome since the last resize
     if (!prefersReducedMotion()) {
       rec.el.classList.add("is-snapping");
       window.setTimeout(() => rec.el.classList.remove("is-snapping"), 300);

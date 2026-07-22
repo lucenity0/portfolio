@@ -9,3 +9,5 @@ dist-ssr
 feedbacks
 deploy-preview.sh
 .preview-slug
+protect-main.sh
+touch_logs.md

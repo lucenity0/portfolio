@@ -98,8 +98,15 @@
 /* Body — the app content area, scrolls internally.
    The right/bottom margins inset the body's scrollbar (which paints at its
    own padding-box edge) clear of the resize handles. Margin, not padding —
-   liffy and project-window zero the padding for full-bleed content. */
+   liffy and project-window zero the padding for full-bleed content.
+   Also out-stacks .window__resize (z-index 2), same reasoning as
+   .window__controls above: full-bleed app content (liffy's input row,
+   project-window's chrome) sits flush against the body's own edges, so a
+   margin-only gap that's a few px too thin turns any tap along an edge
+   into a resize instead of hitting the control underneath. */
 .window__body {
+  position: relative;
+  z-index: 3;
   flex: 1;
   overflow: auto;
   padding: var(--sp-4);
@@ -177,13 +184,16 @@
    past the border is clipped and unhittable. That puts every fattened handle on
    top of body content at z-index 2, where enableResize's pointerdown kills the
    tap with preventDefault + stopPropagation. So the body's reserved inset
-   (--window-gutter) has to grow to stay ahead of the handles' inward reach:
-     edges   18px @ -6px  → 12px inward
-     corners 20px @ -6px  → 14px inward
-   Both clear the 16px gutter below. Keep that invariant if you retune these. */
+   (--window-gutter) has to grow to stay clear of the handles' inward reach,
+   with real slack instead of a couple of px — rendering quirks (subpixel
+   layout, font metrics, dynamic content) can eat a thin margin in practice:
+     edges   14px @ -4px  → 10px inward
+     corners 16px @ -4px  → 12px inward
+   Both clear the 20px gutter below with an 8-10px margin. Keep that
+   invariant if you retune these. */
 @media (pointer: coarse) {
   :root {
-    --window-gutter: 16px;
+    --window-gutter: 20px;
   }
   /* Left edge too — the base rule only reserves right/bottom. */
   .window__body {
@@ -191,46 +201,46 @@
   }
   .window__resize--e,
   .window__resize--w {
-    width: 18px;
+    width: 14px;
   }
   .window__resize--e {
-    right: -6px;
+    right: -4px;
   }
   .window__resize--w {
-    left: -6px;
+    left: -4px;
   }
   .window__resize--n,
   .window__resize--s {
-    height: 18px;
+    height: 14px;
   }
   .window__resize--n {
-    top: -6px;
+    top: -4px;
   }
   .window__resize--s {
-    bottom: -6px;
+    bottom: -4px;
   }
   .window__resize--ne,
   .window__resize--nw,
   .window__resize--se,
   .window__resize--sw {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
   }
   .window__resize--nw,
   .window__resize--sw {
-    left: -6px;
+    left: -4px;
   }
   .window__resize--ne,
   .window__resize--se {
-    right: -6px;
+    right: -4px;
   }
   .window__resize--nw,
   .window__resize--ne {
-    top: -6px;
+    top: -4px;
   }
   .window__resize--sw,
   .window__resize--se {
-    bottom: -6px;
+    bottom: -4px;
   }
   .window__btn {
     width: 28px;

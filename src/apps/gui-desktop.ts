@@ -170,11 +170,41 @@ export function mountGuiDesktop(
   // for windows appearing/leaving and for focus/minimize class flips.
   // Mutations inside our own layer are ignored — re-rendering the taskbar
   // must never re-trigger the observer (infinite loop).
+  //
+  // `renderTasks` only reads classes (is-active/is-min) and the open-window
+  // list, never `style` — so `style` is deliberately left out of the filter.
+  // Watching it caught every drag frame's left/top writes *and* the zIndex
+  // bump `focus()` makes on literally every pointerdown, which reliably
+  // fired a taskbar rebuild mid-touch on mobile and ate the synthetic
+  // `click` that was supposed to follow (WebKit drops it if the DOM churns
+  // under the finger). A live pointer is also tracked so that even a
+  // legitimate class-driven render (switching focus between two open
+  // windows) waits for the gesture to end instead of firing mid-touch.
   let raf = 0;
+  let pointerDown = false;
+  let renderPending = false;
   const scheduleRender = () => {
+    if (pointerDown) {
+      renderPending = true;
+      return;
+    }
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(renderTasks);
   };
+  const onPointerDown = () => {
+    pointerDown = true;
+  };
+  const onPointerUp = () => {
+    pointerDown = false;
+    if (renderPending) {
+      renderPending = false;
+      scheduleRender();
+    }
+  };
+  document.addEventListener("pointerdown", onPointerDown, { capture: true });
+  document.addEventListener("pointerup", onPointerUp, { capture: true });
+  document.addEventListener("pointercancel", onPointerUp, { capture: true });
+
   const observer = new MutationObserver((records) => {
     if (records.every((r) => layer.contains(r.target))) return;
     scheduleRender();
@@ -183,7 +213,7 @@ export function mountGuiDesktop(
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ["class", "style"],
+    attributeFilter: ["class"],
   });
   renderTasks();
 
@@ -191,6 +221,9 @@ export function mountGuiDesktop(
     destroy() {
       observer.disconnect();
       cancelAnimationFrame(raf);
+      document.removeEventListener("pointerdown", onPointerDown, { capture: true });
+      document.removeEventListener("pointerup", onPointerUp, { capture: true });
+      document.removeEventListener("pointercancel", onPointerUp, { capture: true });
       window.clearInterval(clockTimer);
       document.removeEventListener("click", onDocClick);
       wallpaper.destroy();
