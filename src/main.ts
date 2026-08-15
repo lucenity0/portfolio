@@ -12,6 +12,7 @@ import "@/styles/terminal.css";
 import "@/styles/window.css";
 import "@/styles/apps.css";
 import "@/styles/liffy.css";
+import "@/styles/vinyl.css";
 import "@/styles/hero.css";
 import "@/styles/gui.css";
 

@@ -1,0 +1,349 @@
+/* ------------------------------------------------------------------ *
+ * vinyl — the hidden record player. Two layouts from one markup:
+ * docked into the tty desktop's empty right half, or packed into a
+ * window when the screen is too small for that. Everything stays in
+ * the same monochrome palette as the rest of the OS; the only warmth
+ * is the record label itself, painted on the canvas.
+ * ------------------------------------------------------------------ */
+
+.vinyl {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--mono);
+  color: var(--ink);
+}
+
+/* Docked: furniture on the desktop, beside the terminal. Sits under
+   windows so an opened app is never blocked by the record. */
+.vinyl--docked {
+  position: absolute;
+  right: clamp(16px, 5vw, 96px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: var(--z-terminal);
+  /* Scene (88px × SCALE 4 = 352) plus the padding either side. Any
+     narrower and the canvas scales by a fraction, which smears pixel
+     art into uneven columns. */
+  width: 384px;
+  padding: var(--sp-4);
+  background: var(--panel-2);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 48px -12px var(--shadow);
+}
+
+/* Windowed: the window chrome already frames it, so drop the panel. */
+.vinyl--windowed {
+  width: 100%;
+  padding: var(--sp-3);
+  background: none;
+  border: 0;
+}
+
+/* Hugs the canvas, so the sleeve's percentage offsets are measured
+   against the scene rather than against whatever space is going spare. */
+.vinyl__stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* The album art, at its own resolution — deliberately NOT pixelated. */
+.vinyl__sleeve {
+  position: absolute;
+  display: block;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  box-shadow: 3px 3px 0 rgb(0 0 0 / 0.55);
+}
+/* Width is set inline from the scene size; height must stay `auto` so a
+   narrow window scales the scene instead of squashing it. */
+.vinyl__canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  /* The whole point: no browser smoothing over the scene pixels. */
+  image-rendering: pixelated;
+  /* The record is draggable: claim the gesture so a touch scrub doesn't
+     scroll the page out from under the needle. */
+  cursor: grab;
+  touch-action: none;
+}
+.vinyl__canvas.is-scrubbing {
+  cursor: grabbing;
+}
+
+.vinyl__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+.vinyl__meta strong {
+  font-size: var(--fs-md);
+  letter-spacing: 0.14em;
+}
+.vinyl__meta span {
+  font-size: var(--fs-xs);
+  color: var(--sub);
+}
+
+.vinyl__now {
+  font-size: var(--fs-sm);
+  color: var(--dim);
+  text-align: center;
+  max-width: 100%;
+}
+
+/* A name and a now-playing line are each one line, whatever their
+   length: the box clips, and JS starts the text sliding when — and only
+   when — it measures a real overflow.
+
+   The full width matters: the panel centres its children, so a box left
+   to size itself grows with its text and never overflows — there would
+   be nothing to measure and the text would push the panel wider. */
+.vinyl__meta {
+  width: 100%;
+}
+.vinyl__name,
+.vinyl__now {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+}
+/* Centred text that overflows spills out of both sides; once it's
+   sliding it should start flush left and travel exactly the overflow. */
+.vinyl__name.is-marquee,
+.vinyl__now.is-marquee {
+  text-align: left;
+}
+.vinyl__name > span,
+.vinyl__now > span {
+  display: inline-block;
+}
+.vinyl__name.is-marquee > span,
+.vinyl__now.is-marquee > span {
+  animation: vinyl-slide var(--dur, 8s) ease-in-out infinite alternate;
+}
+
+/* Out and back, rather than a loop with a duplicated copy of the text —
+   a title that scrolls past and returns stays readable at both ends. */
+@keyframes vinyl-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-1 * var(--shift, 0px)));
+  }
+}
+
+.vinyl__bar {
+  width: 100%;
+  height: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  cursor: pointer;
+  touch-action: none;
+}
+.vinyl__bar:focus-visible {
+  outline: 1px solid var(--dim);
+  outline-offset: 2px;
+}
+.vinyl__bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--dim);
+}
+
+.vinyl__time {
+  font-size: var(--fs-xs);
+  color: var(--sub);
+  font-variant-numeric: tabular-nums;
+  min-height: 1em;
+}
+
+.vinyl__controls {
+  display: flex;
+  gap: var(--sp-2);
+}
+.vinyl__controls.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.vinyl__btn {
+  min-width: 40px;
+  padding: var(--sp-1) var(--sp-2);
+  font: inherit;
+  font-size: var(--fs-xs);
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+.vinyl__btn:hover,
+.vinyl__btn:focus-visible {
+  background: var(--line);
+}
+/* Shuffle / repeat when engaged. The glyph carries the state too, so
+   this is reinforcement rather than the only signal. */
+.vinyl__btn.is-active {
+  color: var(--ink);
+  border-color: var(--dim);
+  background: var(--line);
+}
+
+/* Volume: a labelled slider, so the transport row stays glyphs-only. */
+.vinyl__vol {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  font-size: var(--fs-xs);
+  color: var(--sub);
+}
+.vinyl__vol.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.vinyl__vol input {
+  flex: 1;
+  accent-color: var(--dim);
+}
+
+.vinyl__loadrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  justify-content: center;
+}
+
+/* A <label> wearing a button's clothes, because a file input can't be
+   styled but its label can. */
+.vinyl__load {
+  display: inline-block;
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-xs);
+  color: var(--dim);
+  background: var(--panel);
+  border: 1px dashed var(--line);
+  cursor: pointer;
+}
+.vinyl__load:hover,
+.vinyl__load:focus-visible {
+  color: var(--ink);
+  border-style: solid;
+}
+/* Off-screen rather than display:none — a hidden input can't be
+   focused, and the keyboard path needs it to be. */
+.vinyl__file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Dragging a record over the deck. */
+.vinyl.is-dropping {
+  outline: 1px dashed var(--dim);
+  outline-offset: -4px;
+}
+
+.vinyl__tracks {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 190px;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.vinyl__track {
+  display: flex;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: 3px var(--sp-1);
+  font: inherit;
+  font-size: var(--fs-xs);
+  color: var(--sub);
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.vinyl__track:hover,
+.vinyl__track:focus-visible {
+  color: var(--ink);
+  background: var(--panel);
+}
+.vinyl__track.is-current {
+  color: var(--ink);
+}
+/* The needle marker, so the current track reads without relying on
+   colour alone. */
+.vinyl__track.is-current .vinyl__num::before {
+  content: "▸";
+  margin-right: 2px;
+}
+.vinyl__num {
+  color: var(--sub);
+  font-variant-numeric: tabular-nums;
+}
+.vinyl__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vinyl__note {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--dim);
+  text-align: center;
+}
+
+.vinyl__credit {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--sub);
+  text-align: center;
+}
+
+.vinyl__close {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font: inherit;
+  line-height: 1;
+  color: var(--sub);
+  background: none;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+.vinyl__close:hover,
+.vinyl__close:focus-visible {
+  color: var(--ink);
+  background: var(--panel);
+}
+
+/* A short desk isn't worth a scrolling track list — trim it instead. */
+@media (max-height: 720px) {
+  .vinyl__tracks {
+    max-height: 120px;
+  }
+}

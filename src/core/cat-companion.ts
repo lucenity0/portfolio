@@ -45,6 +45,7 @@ const HERO_MURMURS = [
   "i can brew coffee... but i like cookies more... zzz",
   "zzz... i know secrets... ask me... zzz",
   "mrrp... coffee... i like it... zzz",
+  "zzz... spin me something... 33 and a third... zzz",
 ];
 const LIFFY_MURMURS = [
   "mrrp... say meow... i dare you...",

@@ -227,7 +227,10 @@ export class Terminal implements ITerminal {
       if (this.busy || e.metaKey || e.ctrlKey || e.altKey) return;
       const active = document.activeElement;
       if (active === this.inputEl) return;
-      if (active instanceof Element && active.closest(".window")) return;
+      // Windows own their focus — and so does the docked record deck,
+      // which sits on the desktop rather than inside a window. Without
+      // this, Space on its play button types a space into the prompt.
+      if (active instanceof Element && active.closest(".window, .vinyl")) return;
       if (e.key.length === 1 || e.key === "Backspace" || e.key === "Enter") {
         this.focusInput();
       }

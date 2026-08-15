@@ -10,6 +10,7 @@ import { openContact } from "@/apps/contact";
 import { openProjects } from "@/apps/projects";
 import { openProjectWindow } from "@/apps/project-window";
 import { openLiffy } from "@/apps/liffy";
+import { openVinyl } from "@/apps/vinyl";
 import { openResume } from "@/apps/resume";
 import { buildCat } from "@/core/cat";
 import { prefersReducedMotion, sleep, startSpinner } from "@/core/fx";
@@ -112,6 +113,16 @@ export function buildCommands(): Command[] {
     },
     // --- easter eggs (hidden from help) ---
     {
+      name: "vinyl",
+      summary: "",
+      hidden: true,
+      run: (ctx: CommandContext) => {
+        // Desktop-first: on a wide tty desktop the deck docks into the
+        // empty right half; anywhere smaller it opens as a window.
+        openVinyl(ctx);
+      },
+    },
+    {
       name: "cat",
       summary: "",
       hidden: true,
@@ -155,8 +166,10 @@ export function buildCommands(): Command[] {
             ctx.terminal.print(`valid slugs: ${PROJECTS.map((p)=>p.slug).join(", ")}`,"sub");
             return;
           }
+          // The repo name isn't always the slug (Tiket, the research
+          // ones), so take the real URL off the project.
           ctx.terminal.print(`Cloning into '${slug}'...`,"dim");
-          ctx.terminal.print(`remote: https://github.com/lucenity0/${slug}.git`,"sub");
+          ctx.terminal.print(`remote: ${project.repo ?? project.url}.git`,"sub");
         }
       },
       // hidden from help, but Tab still helps whoever finds it
