@@ -454,6 +454,39 @@
   border-radius: 3px;
   font-size: 0.9em;
 }
+/* Tables — mostly for fetched READMEs, which lean on them. Wide ones
+   scroll inside their own box rather than stretching the window. */
+.docs .md-table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  margin: var(--sp-3) 0;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.docs .md-table th,
+.docs .md-table td {
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+.docs .md-table th {
+  color: var(--ink);
+  background: var(--panel);
+  letter-spacing: 0.06em;
+}
+.docs .md-table td {
+  color: var(--dim);
+}
+.docs .md-table .is-center {
+  text-align: center;
+}
+.docs .md-table .is-right {
+  text-align: right;
+}
+
 .docs .md-pre {
   background: #060606;
   border: 1px solid var(--line);

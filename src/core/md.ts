@@ -68,6 +68,40 @@ export function stripMarkdown(src: string): string {
 
 const LIST_RE = /^(\s*)([-*+]|\d+\.)\s+(.*)$/;
 
+/** A separator row: `|---|:--:|`, with or without the outer pipes. */
+const TABLE_SEP_RE = /^\s*\|?[\s:-]*-[\s|:-]*\|?\s*$/;
+
+/** Cells of one row, outer pipes dropped. */
+const splitRow = (row: string): string[] =>
+  row
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((c) => c.trim());
+
+/** Colons in the separator set a column's alignment. */
+const alignOf = (spec: string): string => {
+  const left = spec.startsWith(":");
+  const right = spec.endsWith(":");
+  if (left && right) return "is-center";
+  return right ? "is-right" : "";
+};
+
+/** A table begins where a row of cells sits above a separator row. */
+function isTableStart(lines: string[], i: number): boolean {
+  const head = lines[i];
+  const sep = lines[i + 1];
+  return (
+    head !== undefined &&
+    sep !== undefined &&
+    head.includes("|") &&
+    sep.includes("-") &&
+    sep.includes("|") &&
+    TABLE_SEP_RE.test(sep)
+  );
+}
+
 export function renderMarkdown(src: string): string {
   const lines = src.replace(/\r\n?/g, "\n").split("\n");
   const out: string[] = [];
@@ -139,6 +173,35 @@ export function renderMarkdown(src: string): string {
       continue;
     }
 
+    // Table: a header row, a |---|---| separator, then body rows. Worth
+    // supporting because READMEs fetched from GitHub lean on them, and
+    // without this a table collapses into one run-on paragraph.
+    if (isTableStart(lines, i)) {
+      const head = splitRow(line);
+      const align = splitRow(lines[i + 1]!).map(alignOf);
+      i += 2;
+      const body: string[][] = [];
+      while (i < lines.length && lines[i]!.trim() !== "" && lines[i]!.includes("|")) {
+        body.push(splitRow(lines[i]!));
+        i++;
+      }
+      const cell = (tag: "th" | "td", text: string, col: number): string => {
+        const cls = align[col] ? ` class="${align[col]}"` : "";
+        return `<${tag}${cls}>${inline(text)}</${tag}>`;
+      };
+      // Body rows are laid out against the header, so a row with too few
+      // or too many cells can't shear the rest of the table.
+      const rows = body
+        .map((r) => `<tr>${head.map((_, c) => cell("td", r[c] ?? "", c)).join("")}</tr>`)
+        .join("");
+      out.push(
+        `<table class="md-table"><thead><tr>${head
+          .map((h, c) => cell("th", h, c))
+          .join("")}</tr></thead><tbody>${rows}</tbody></table>`,
+      );
+      continue;
+    }
+
     // Paragraph (consume consecutive non-block lines).
     const para: string[] = [];
     while (
@@ -148,6 +211,7 @@ export function renderMarkdown(src: string): string {
       !/^#{1,6}\s/.test(lines[i]!) &&
       !/^>\s?/.test(lines[i]!) &&
       !LIST_RE.test(lines[i]!) &&
+      !isTableStart(lines, i) &&
       !/^(-{3,}|\*{3,}|_{3,})\s*$/.test(lines[i]!.trim())
     ) {
       para.push(lines[i]!);
