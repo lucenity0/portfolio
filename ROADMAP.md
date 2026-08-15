@@ -39,7 +39,7 @@ together and [docs/backlog.md](docs/backlog.md) for the granular issue list.
 - [x] Real `about` (bio, timeline, pixel avatar)
 - [x] `projects` grid with thumbnails + tags/filter
 - [x] `project-window`: live loading bar, error/fallback states, per-project embed config
-- [ ] Real project catalogue in `data/projects.ts` (replace placeholders)
+- [x] Real project catalogue in `data/projects.ts` (replace placeholders)
 - [x] `contact` with real handles
 - [x] Optional: `skills`, `resume`, easter eggs
 

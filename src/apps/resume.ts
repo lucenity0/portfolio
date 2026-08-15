@@ -7,6 +7,7 @@
 import type { CommandContext } from "@/types";
 import { renderMarkdown } from "@/core/md";
 import resumeMd from "@/data/resume.md?raw";
+import { fitWindow } from "@/core/layout";
 
 export function openResume(ctx: CommandContext): void {
   const body = document.createElement("div");
@@ -40,8 +41,9 @@ export function openResume(ctx: CommandContext): void {
     id: "resume",
     title: "resume — nafees",
     content: body,
-    width: 560,
-    height: 480,
+    ...fitWindow(ctx.windows.desktop(), {
+      wFrac: 0.44, hFrac: 0.78, minW: 560, minH: 480, maxW: 860, maxH: 900,
+    }),
   });
   ctx.terminal.print("opened: resume", "dim");
 }

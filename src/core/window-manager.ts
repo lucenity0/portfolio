@@ -91,6 +91,11 @@ export class DesktopWindowManager implements WindowManager {
     this.reclampAll();
   }
 
+  /** The work area, for apps that size themselves to the screen. */
+  desktop(): { w: number; h: number } {
+    return { w: this.area.w, h: this.area.h };
+  }
+
   /** Fit every open window back inside the current desktop bounds. */
   private reclampAll(): void {
     const { w: W, h: H } = this.area;
@@ -134,8 +139,18 @@ export class DesktopWindowManager implements WindowManager {
     const { w: W, h: H } = this.area;
     const maxW = Math.max(MIN_W, W - SPAWN_INSET);
     const maxH = Math.max(MIN_H, H - SPAWN_INSET);
-    const w = Math.min(opts.width ?? DEFAULTS.width, maxW);
-    const h = Math.min(opts.height ?? DEFAULTS.height, maxH);
+    let w = Math.min(opts.width ?? DEFAULTS.width, maxW);
+    let h = Math.min(opts.height ?? DEFAULTS.height, maxH);
+    // With an aspect, shrink both axes by the same factor. Clamping each on
+    // its own is what squashes an embed on a short screen — the window keeps
+    // its full width and loses only height, and the site inside letterboxes.
+    if (opts.aspect && opts.aspect > 0) {
+      const wantW = opts.width ?? DEFAULTS.width;
+      const wantH = opts.height ?? wantW / opts.aspect;
+      const fit = Math.min(1, maxW / wantW, maxH / wantH);
+      w = Math.max(MIN_W, Math.min(maxW, Math.round(wantW * fit)));
+      h = Math.max(MIN_H, Math.min(maxH, Math.round(wantH * fit)));
+    }
     el.style.width = `${w}px`;
     el.style.height = `${h}px`;
 

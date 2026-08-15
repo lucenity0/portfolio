@@ -1,15 +1,22 @@
 /* ------------------------------------------------------------------ *
- * project-window — opens a window for one project. Embeddable projects
- * show a live <iframe> wrapped in a faux retro browser (URL bar +
- * loading bar). Non-embeddable ones (iOS/App-Store pages, sites that
- * block framing via X-Frame-Options / CSP) fall back to a preview card
- * with an "open in new tab" action.
- *
- * v1 skeleton: structure + fallback wired; richer loading FX in Phase 3.
+ * project-window — opens a window for one project. Projects with a site
+ * show it live in an <iframe> wrapped in a faux retro browser (URL bar +
+ * loading bar). Projects that are only source can't be framed at all —
+ * GitHub refuses it outright — so they open in the repo reader instead
+ * (repo-window.ts), which fetches the README and renders it here.
  * ------------------------------------------------------------------ */
 
 import type { CommandContext, Project } from "@/types";
 import { getProject } from "@/data/projects";
+import { buildRepoView } from "@/apps/repo-window";
+import { fitWindow } from "@/core/layout";
+
+/** The viewport a site is assumed to be designed for, absent its own. */
+const DEFAULT_VIEWPORT = { width: 1280, height: 800 } as const;
+/** Room the browser chrome (URL bar) steals from the stage. */
+const CHROME_H = 34;
+/** Below this fraction of the design width, stop scaling and go responsive. */
+const MIN_SCALE = 0.5;
 
 export function openProjectWindow(ctx: CommandContext, slug: string): void {
   const project = getProject(slug);
@@ -18,16 +25,33 @@ export function openProjectWindow(ctx: CommandContext, slug: string): void {
     return;
   }
 
-  const body = project.embeddable
-    ? buildEmbed(project)
-    : buildFallback(project);
+  const body = project.embeddable ? buildEmbed(project) : buildRepoView(project);
+
+  const desk = ctx.windows.desktop();
+  let width: number;
+  let height: number;
+
+  if (project.embeddable) {
+    // Open at the site's own proportions: the stage matches the design
+    // viewport's ratio, plus the faux URL bar above it. The width comes
+    // from the desktop, so a big screen gets a big preview.
+    const vp = project.viewport ?? DEFAULT_VIEWPORT;
+    width = Math.round(Math.max(700, Math.min(1320, desk.w * 0.72)));
+    height = Math.round((width * vp.height) / vp.width) + CHROME_H;
+  } else {
+    // A README is prose, so it wants a column rather than a canvas.
+    ({ width, height } = fitWindow(desk, {
+      wFrac: 0.46, hFrac: 0.78, minW: 560, minH: 420, maxW: 900, maxH: 900,
+    }));
+  }
 
   const win = ctx.windows.open({
     id: `project:${project.slug}`,
     title: `project — ${project.name}`,
     content: body,
-    width: 720,
-    height: 500,
+    width,
+    height,
+    aspect: project.embeddable ? width / height : undefined,
   });
   // The project chrome manages its own padding/scroll.
   win.bodyEl.style.padding = "0";
@@ -110,30 +134,32 @@ function buildEmbed(project: Project): HTMLElement {
     loader.append(open);
   }, LOAD_TIMEOUT_MS);
 
+  // Render at the site's design width and scale the whole frame down to the
+  // stage, the way a responsive preview does. Without this a 900px window
+  // hands the site a 900px viewport and gets its tablet layout back — the
+  // desktop design, which is the thing worth showing, never appears.
+  // Scaling *up* is never right: past the design width the frame just runs
+  // native, so a maximized window shows the site at 1:1.
+  const vp = project.viewport ?? DEFAULT_VIEWPORT;
+  const fitFrame = (): void => {
+    const sw = stage.clientWidth;
+    const sh = stage.clientHeight;
+    if (sw === 0 || sh === 0) return;
+    let scale = Math.min(1, sw / vp.width);
+    // Past a point the desktop layout is just small — a phone-width window
+    // showing a 1440px design at 24% is a screenshot, not a site. Below the
+    // floor, hand the site the real width and let its own responsive layout
+    // do the job it was written for.
+    if (scale < MIN_SCALE) scale = 1;
+    frame.style.width = `${sw / scale}px`;
+    frame.style.height = `${sh / scale}px`;
+    frame.style.transform = scale === 1 ? "" : `scale(${scale})`;
+  };
+  // Fires on open, on window resize, and on maximize — the stage is the one
+  // element that knows all three.
+  new ResizeObserver(fitFrame).observe(stage);
+
   stage.append(frame, loader);
   wrap.append(stage);
-  return wrap;
-}
-
-function buildFallback(project: Project): HTMLElement {
-  const wrap = document.createElement("div");
-  wrap.className = "project project--fallback";
-  wrap.append(browserBar(project.url));
-
-  const card = document.createElement("div");
-  card.className = "project__fallback";
-  card.innerHTML = `
-    <p class="muted">this one can't be embedded (${project.kind === "ios" ? "iOS / App&nbsp;Store" : "the site blocks framing"}).</p>
-    <p><strong>${project.name}</strong></p>
-    <p class="muted">${project.blurb}</p>
-  `;
-  const open = document.createElement("a");
-  open.className = "project__open";
-  open.href = project.url;
-  open.target = "_blank";
-  open.rel = "noreferrer noopener";
-  open.textContent = "open in new tab ↗";
-  card.append(open);
-  wrap.append(card);
   return wrap;
 }

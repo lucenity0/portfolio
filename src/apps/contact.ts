@@ -3,6 +3,7 @@
  * ------------------------------------------------------------------ */
 
 import type { CommandContext } from "@/types";
+import { fitWindow } from "@/core/layout";
 
 export function openContact(ctx: CommandContext): void {
   const body = document.createElement("div");
@@ -62,8 +63,9 @@ export function openContact(ctx: CommandContext): void {
     id: "contact",
     title: "contact",
     content: body,
-    width: 520,
-    height: 360,
+    ...fitWindow(ctx.windows.desktop(), {
+      wFrac: 0.32, hFrac: 0.42, minW: 520, minH: 360, maxW: 680, maxH: 520,
+    }),
   });
   ctx.terminal.print("opened: contact", "dim");
 }

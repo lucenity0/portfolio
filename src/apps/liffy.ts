@@ -16,6 +16,7 @@ import { RetrievalEngine } from "@/core/liffy/retrieval";
 import { CatCompanion } from "@/core/cat-companion";
 import { prefersReducedMotion, sleep, startSpinner, typewriter } from "@/core/fx";
 import liffyMd from "@/data/liffy.md?raw";
+import { fitWindow } from "@/core/layout";
 
 // One engine instance for the session (parses the MD once).
 let engine: LiffyEngine | null = null;
@@ -219,8 +220,9 @@ export function openLiffy(ctx: CommandContext): void {
     id: "liffy",
     title: "liffy — ask about nafees",
     content: root,
-    width: 520,
-    height: 420,
+    ...fitWindow(ctx.windows.desktop(), {
+      wFrac: 0.36, hFrac: 0.62, minW: 520, minH: 420, maxW: 760, maxH: 780,
+    }),
   });
   win.bodyEl.style.padding = "0";
 

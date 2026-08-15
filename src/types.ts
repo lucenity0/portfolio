@@ -24,6 +24,12 @@ export interface OpenWindowOptions {
   content: HTMLElement | string;
   width?: number;
   height?: number;
+  /**
+   * Preferred width ÷ height. When set, a window too big for the desktop is
+   * scaled down on both axes together instead of clamped per-axis, so an
+   * embed keeps the proportions it was designed for.
+   */
+  aspect?: number;
   x?: number;
   y?: number;
   /** If true (default), only one window per id may exist at a time. */
@@ -41,6 +47,11 @@ export interface WindowManager {
   restore(id: string): void;
   /** Every open window, for shells (taskbar) that mirror manager state. */
   list(): Array<{ id: string; title: string; el: HTMLElement; minimized: boolean }>;
+  /**
+   * The desktop area windows may occupy, so an app can size itself to
+   * the screen it opened on rather than to a number picked on a laptop.
+   */
+  desktop(): { w: number; h: number };
 }
 
 /** The terminal surface commands write back to. */
@@ -86,15 +97,27 @@ export interface Project {
   name: string;
   blurb: string;
   kind: ProjectKind;
-  /** Live URL to embed (web) or link to (ios). */
+  /** Where the project lives: its site, or its repo when it has no site. */
   url: string;
+  /** Source, when there is one. Shown alongside a live site. */
+  repo?: string;
   /**
    * Whether the URL permits iframe embedding. iOS/App-Store pages and any
    * site sending X-Frame-Options/CSP frame-ancestors are `false` → the
    * project window falls back to a preview card + "open in new tab".
    */
   embeddable: boolean;
-  /** Optional path to a thumbnail (used by the fallback card). */
+  /**
+   * The logical browser viewport this site is designed for. Drives both the
+   * window's opening proportions and the embed's render width — a 900px
+   * window rendering at 1280 logical px shows the desktop layout rather than
+   * the site's mobile breakpoint. Defaults to a laptop viewport.
+   */
+  viewport?: { width: number; height: number };
+  /**
+   * Screenshot of the project's site, shown on its card. Projects with
+   * no site leave this unset and get a GitHub mark instead.
+   */
   thumb?: string;
   tags?: string[];
 }
