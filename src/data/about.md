@@ -16,23 +16,45 @@ and multimodal / reinforcement learning research.
 
 ## Projects
 
-### Liffy
-Open-source, self-hosted AI-powered code review tool (`lucenity0/Liffy`). Built on FastAPI,
-React/TypeScript, PostgreSQL, Redis, Celery, ChromaDB, and LangChain, with GitHub OAuth for
-repo access. Users supply their own LLM API keys rather than routing through a hosted
-service. Development included a full GitHub Issues/milestones setup run across a two-week
-sprint, one-command setup scripts for both macOS and Windows, and Vertex AI integration for
-Claude model access with prompt caching.
+### Liffy — [liffy.lucenity.dev](https://liffy.lucenity.dev/)
+Open-source, self-hosted AI code review (`lucenity0/Liffy`), led as primary owner and top
+committer with one collaborator on a layer-ownership split across backend, frontend, and the
+LLM pipeline. It indexes an entire repository
+by meaning before it reviews anything — so a comment on a Windows setup script can be grounded
+in the macOS script that does the same job correctly, two files that share almost no text.
+Code is split at function and class boundaries rather than fixed line counts, embedded into a
+local vector store, and retrieved per pull request; reviews fire from a GitHub webhook onto a
+background queue, come back line-anchored, and get posted to the PR. Readers rate each comment
+up or down, and a weekly job scores the system against those ratings. Four interchangeable
+model providers — Ollama (fully local), Gemini's free tier, an existing Claude Code
+subscription, or the Anthropic API — with embeddings running locally by default, so with
+Ollama nothing leaves the machine. Setup is `docker compose up`. All fifteen steps from
+sign-in to score run today; teams/org accounts and non-GitHub sources are deliberately not
+built.
 
-### Askcal
-*(formerly Pulse)* — an AI-powered daily scheduler for student freelancers, built around a
-coffee-brew metaphor as its core UX language. Stack: FastAPI + PostgreSQL backend, SwiftUI
-iOS app, Google OAuth. Core feature is a regret-ranked inbox classifier that uses Gemini
-structured output to pull signals out of Gmail and compute a deterministic 0–100 "regret
-score" per email, auto-converting actionable mail into tasks slotted around real Google
-Calendar events. Ships as a full monochrome iOS app with Today, Inbox, Calendar, Routines,
-and Review views, backed by async SQLAlchemy and JWT auth with opaque refresh token
-rotation, and 79 passing backend tests.
+### Askcal — [askcal.lucenity.dev](https://askcal.lucenity.dev/)
+Open-source (MIT) daily scheduler for student freelancers that ranks the inbox by *regret* —
+what ignoring a message actually costs — instead of by urgency or arrival order. Claude reads
+incoming mail with structured output but is never asked for a score; it extracts what it can
+genuinely judge (stakes, sender, deadline, whether there's a concrete task) and four terms of
+published arithmetic turn that into a 0–100 regret score. The structured output is validated
+against the same schema the prompt is generated from, so prompt and parser cannot drift, and
+classification runs in batches off the ingest path — mail lands immediately even when the
+model is slow. Four gates then decide whether a
+message becomes work at all, so digests and receipts stay in the inbox. What survives is fitted
+into the real day: Google Calendar busy blocks are hard edges, work is placed
+highest-consequence-first into the earliest gap that fits, and anything that doesn't fit is
+surfaced rather than silently dropped. Tracks are rows the user names and describes, and that
+description is what the classifier reads, and several connected mailboxes fold into one day.
+Stack: SwiftUI iOS/iPadOS client with optimistic writes and rollback, FastAPI + PostgreSQL
+backend (async SQLAlchemy, Alembic) deployed via Docker Compose behind Caddy, Google OAuth
+down to short-lived JWTs with DB-backed refresh tokens encrypted at rest as a column type with
+version-prefixed values, so keys rotate without downtime. 282 backend tests passing in CI on a
+deliberately database-free suite, plus a golden set of 12 classifier cases. On iPad the day and
+its page open side by side, and that page takes Apple Pencil handwriting through Scribble, so
+a handwritten note stays searchable text. Design is warm ruled paper with a red margin line,
+both themes verified past 4.5:1 contrast rather than assumed. Deployed and running; no account,
+no signup, no tracking.
 
 ### Tiket
 Full-stack ticket booking system (SwiftUI, FastAPI, PostgreSQL, AWS EC2, JWT). Handles

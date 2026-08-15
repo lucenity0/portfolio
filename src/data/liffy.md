@@ -65,13 +65,21 @@ ask me why you should hire me — I've got a real pitch, not just a bio.
 
 ## hire / hiring / why hire / hire him / why hire him / why should we hire him / why should you hire him / why should i hire him / should we hire him / should i hire him / why choose him / worth hiring / strengths / pitch / value proposition / good fit / qualifications / candidate / stand out / availability
 
-Short version: I ship, not just study. Four solo-built products with real,
+Short version: I ship, not just study. Four finished products with real,
 working stacks — Liffy, Askcal, Tiket, and Schedulr — done alongside a full CS
-course load, not class assignments gathering dust in a repo. Tiket's seat
+course load, not class assignments gathering dust in a repo. Liffy and Askcal
+are both open source, deployed, and documented end to end on their own landing
+pages: Liffy reviews pull requests by retrieving from a semantic index of the
+whole repository, and Askcal ranks a mailbox by what ignoring it costs, on
+arithmetic you can read rather than a number a model made up. On Liffy I was
+project lead and top committer by a wide margin, running a layer-ownership
+split with a collaborator across backend, frontend, and the LLM pipeline — so
+there's ownership experience in there, not just solo hacking. Tiket's seat
 booking survived a load test at 12,441 concurrent requests with zero double
 bookings, which is a concurrency problem most undergrads never touch. Askcal
-ships JWT auth, live Gmail and Calendar integration, and 79 backend tests
-passing — a real product, not a demo. I move across the whole stack instead of
+ships JWT auth, live Gmail and Calendar integration, refresh tokens encrypted
+at rest with rotatable keys, and 282 backend tests — a real product, not a
+demo. I move across the whole stack instead of
 staying in one lane: mobile (SwiftUI), backend (FastAPI, PostgreSQL, Celery),
 ML research (CLIP, PPO, LangChain), and design (freelance client work under my
 own brand, Lucenity).
@@ -96,17 +104,22 @@ Tools: Git/GitHub, Docker, AWS EC2, Xcode, Figma, Jupyter Notebook, VS Code.
 
 ## projects / work / portfolio / what has he built / what do you build / apps / what has nafees made / list
 
-The big ones: **Liffy** (this — an AI code review tool), **Askcal** (an AI daily
-scheduler), **Tiket** (a ticket booking system), and **Schedulr** (an OS concepts
-simulator). Ask about any of them by name and I'll go deeper — or ask why you
-should hire me for the highlight reel across all four.
+The big ones: **Liffy** (an AI code review tool — yes, same name as me),
+**Askcal** (a daily scheduler that ranks your inbox by regret), **Tiket** (a
+ticket booking system), and **Schedulr** (an OS concepts simulator). Liffy and
+Askcal are both done, open source, and have proper landing pages of their own
+now — liffy.lucenity.dev and askcal.lucenity.dev. Ask about any of them by
+name and I'll go deeper — or ask why you should hire me for the highlight reel
+across all four. There are also two exam-notes sites — ML Notes and BDA
+Notes — built out of his own BMSCE coursework, formulas and solved papers and
+all.
 
 ## experience / jobs / internships / career / roles
 
 Graphic Designer at Clearly Blue Pvt Ltd — still affiliated with them on a
 freelance basis. Beyond that, most of the hands-on experience comes from
 research (the hateful-meme and traffic-signal projects), freelance design work
-under Lucenity, and shipping full products solo (Liffy, Askcal, Tiket,
+under Lucenity, and shipping full products end to end (Liffy, Askcal, Tiket,
 Schedulr). Currently prepping for placements and research program applications.
 
 ## education / study / college / university / school / degree / cgpa / gpa / graduate / graduation
@@ -121,49 +134,103 @@ Best way in is GitHub — [github.com/lucenity0](https://github.com/lucenity0).
 Email: nafees.s2005@gmail.com (secondary: 0lucenity@gmail.com).
 Discord: lucenity. Instagram: @lucenity_.
 LinkedIn: https://www.linkedin.com/in/nafees-s-6770712b0/
-No separate resume or CV link lives in these notes — email him directly and
-he'll send one over.
+For the résumé, close me and type `resume` in the terminal — it opens right
+here, with a PDF download on it.
 
 ## askcal / ask cal / pulse / scheduler / calendar app / inbox / email assistant / regret score
 
-Askcal (renamed from Pulse) is a context-aware daily scheduler that ranks your
-inbox by *regret*, not urgency — built for the student freelancer juggling
-classes, client work, and job hunting at once. Gemini reads incoming email
-with structured output, a deterministic formula turns that into a 0–100
-regret score, and actionable mail (a due invoice, an OA link, a client brief)
-auto-converts into a task while newsletters just stay newsletters — no manual
-triage. Tasks then slot themselves around your real Google Calendar busy
-blocks; pin one to an exact time and everything else routes around it. Work
-lives in weighted Tracks — Uni, Career, Design, Finance, Feed — plus daily
-Routines that reset at midnight and an evening Review that carries unfinished
-work into tomorrow instead of guilt-tripping about it. Design is deliberately
-strict off-white/black, no gradients, no mascot.
+Askcal (renamed from Pulse) is a daily scheduler that ranks your inbox by
+*regret* — what it costs you to have ignored something, not how loudly it
+asked or when it arrived. It's finished and open source now, MIT, deployed and
+running, with a landing page at askcal.lucenity.dev walking through the whole
+thing. The clever bit: Claude reads your mail but is never asked for a score,
+because ask a model for a number between 0 and 100 and you get a different
+answer on Tuesday than on Monday. It extracts only what it can genuinely
+judge — the stakes, the sender, whether there's a concrete task, when it's
+due — and four terms of plain arithmetic turn that into the 0–100 regret
+score. Every constant is printed on the page, so a score you can print is a
+score you can argue with.
 
-Stack: SwiftUI iOS app (monochrome, `@Observable` state) talking JWT-auth'd
-to `askcal-api` — FastAPI, Python 3.13, async SQLAlchemy 2.0/asyncpg, Alembic,
-PostgreSQL 16 — which in turn talks to Gmail, Calendar, and Gemini. Auth is
-Google OAuth 2.0 down to a short-lived 15-minute JWT plus DB-backed opaque
-refresh tokens. 79 backend tests passing, covering the regret formula,
-scheduler, classifier, and auth. The iOS app has Today, Inbox, Calendar
-(interactive, per-date drill-down), Routine, Tracks, Review, and More views.
+Scoring a message and making work out of it are two different decisions, so
+four gates sit between them: a concrete task with real stakes, a confidence
+floor of 0.60, a score floor of 25, and the consequence type. A digest is
+reading, not work; social is never a task; money that already moved is over.
+The sender is deliberately *not* a gate — an assignment from a no-reply system
+is as real as a client writing by hand, and filtering automated senders out
+silently dropped exactly the work that mattered. That bug shipped once and
+won't again. What survives gets fitted into the actual day: Google Calendar
+busy blocks are hard edges the planner may not touch, work is placed
+highest-consequence-first into the earliest gap that fits it, and anything too
+big for the gaps left is surfaced as unscheduled rather than quietly dropped
+or double-booked. Tracks are rows you name and describe yourself — the
+sentence you write is what the classifier reads, beating any assumption the
+model has about what a name usually means. That replaced five categories baked
+into the database, the prompt and the app, which described a guess at
+somebody's life rather than anybody's actual one.
 
-Currently: auth, Gmail ingestion, classification, regret scoring, and
-auto-scheduling are all live and tested. The landing page (`askcal-landing`,
-Three.js + GSAP) still shows an earlier coffee-themed concept from before the
-product pivoted to this monochrome look — rebuild's queued. Web dashboard and
-adaptive scheduling (chronotype, weight nudging) aren't built yet on purpose.
-Pre-open-source hardening — refresh-token encryption at rest, PKCE on the
-OAuth flow, CI, a LICENSE — is the current blocker before it's safe to
-self-host publicly.
+Stack: SwiftUI iOS/iPadOS app (`@Observable` state, optimistic writes that roll
+back if the server refuses) talking JWT-auth'd to `askcal-api` — FastAPI,
+Python 3.13, async SQLAlchemy 2.0/asyncpg, Alembic, PostgreSQL 16, deployed
+with Docker Compose behind Caddy — which in turn talks to Gmail, Calendar, and
+Claude (there's a Gemini path behind a setting). Auth is
+Google OAuth 2.0 down to a short-lived JWT plus DB-backed refresh tokens, and
+those are encrypted as a *column type* rather than at each call site, so the
+one place that forgets can't write plaintext; stored values carry a version
+prefix, which is what let the key rotate without taking a single mailbox
+offline. 282 backend tests run in CI without needing a database at all, plus a
+golden set of twelve classifier cases that each pin one rule — two of those
+found errors in the fixture before they found any in the prompt. The app has
+Today, Inbox, Calendar, Routine, Tracks, Review, and More views; several
+mailboxes fold into one day, and each one carries the tracks its mail is
+usually about as a leaning, never a rule, so a bill at a college address is
+still about money. On iPad the day opens beside its own page, which takes
+Apple Pencil handwriting through Scribble and converts it to searchable text.
+The look is warm ruled paper with a red margin line, New York for anything
+written and mono for anything counted, both themes checked past 4.5:1 contrast
+rather than assumed. Honest gap: that database-free suite is exactly what makes
+model-versus-schema drift invisible to it — there's a command that catches
+that, and it isn't in CI yet.
+No account, no signup, no tracking. Source: github.com/lucenity0/askcal.
 
 ## liffy / what is liffy / this project / this tool / code review
 
-You're looking at it. Liffy is an open-source, self-hosted AI-powered code review
-tool (`lucenity0/Liffy`). Built on FastAPI, React/TypeScript, PostgreSQL, Redis,
-Celery, ChromaDB, and LangChain, with GitHub OAuth for repo access — and you bring
-your own LLM API key instead of routing through a hosted service. Setup included
-one-command install scripts for both macOS and Windows, and Vertex AI integration
-for Claude model access with prompt caching.
+There are two of us, really. I'm the little notes-reading cat you're talking
+to; the Liffy that matters is Nafees's self-hosted AI code review tool, and
+it's finished and running, with its own landing page at liffy.lucenity.dev if
+you want the full tour. The pitch: every
+AI review tool sends the diff to a model, so the only question that matters is
+what *else* it sends. Liffy reads your entire repository once, splits it at
+function and class boundaries instead of arbitrary line counts, stores what
+each piece *means*, and pulls the relevant neighbours in before it says
+anything. It once flagged a bug in a Windows setup script by retrieving the
+macOS script that did the same job correctly — two files sharing almost no
+words, that nobody had told it were related, and the bug was already sitting
+merged in main.
+
+How a review actually runs: a pull request opens, GitHub fires a webhook,
+Liffy verifies the signature, fetches the diff, splits it per file, drops the
+job on a background queue so a forty-file change blocks nothing, embeds the
+changed code, retrieves the nearest neighbours from the vector store, writes
+the briefing, generates the review, checks it and pins each comment to a real
+line, files it, and posts it back to the PR. Then you rate comments up or
+down, and a weekly job scores the whole system against those ratings — a
+review nobody scores can't improve. Fifteen steps end to end, and all fifteen
+run today; the site says so in plain language rather than as a roadmap written
+to look finished.
+
+You bring your own model: Ollama (free, fully local, nothing leaves your
+machine), Gemini's free tier, a Claude Code subscription you're probably
+already paying for, or the Anthropic API metered. Embeddings run locally by
+default and never need a key, whichever one you pick. Setup is `git clone`,
+copy the env file, `docker compose up`. Built on FastAPI, React/TypeScript,
+PostgreSQL, Redis, Celery, ChromaDB and LangChain, with GitHub OAuth for repo
+access — it never sees your password and you can revoke it any time. Also
+shipped: settings in the app so nobody hand-edits a `.env`, indexing for
+languages beyond Python, filter/sort on the review list with a PR picker,
+per-model performance analytics, five themes with a customiser, and a help
+page that files its own bug reports. Not built, on purpose: teams and
+organisation accounts, and reviewing anything that isn't a GitHub pull
+request. Source: github.com/lucenity0/Liffy.
 
 ## tiket / ticket / ticket booking / booking system / seats / concurrency
 
@@ -276,10 +343,12 @@ that shows up in Lucenity's work.
 Music's a big one for me. I play piano, and I sing soprano. And yeah — I'm a
 huge Ariana Grande fan, probably her biggest defender in any room I'm in. Her
 range, the whistle notes, the way she layers harmonies on her own vocals — it's
-just some of the best pop vocal work out there. If you catch me humming
-something between builds, there's a very good chance it's off *Eternal
-Sunshine* or *Positions*. (And if you ask nicely, I might just admit to
-practicing a few of her songs myself...)
+just some of the best pop vocal work out there. Right now it's *petal* (2026)
+on repeat — that's the favourite, top to bottom, though *Eternal Sunshine* and
+*Positions* still get their turns. (And if you ask nicely, I might just admit
+to practicing a few of her songs myself...) There's also a record player hidden
+somewhere in this terminal — it ships with no music, so it spins whatever you
+drop on it. Nothing you drop leaves your machine. The cat knows the word.
 
 ## games / gaming / nintendo / console / video games / fire emblem / what are you playing
 
