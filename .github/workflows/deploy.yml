@@ -1,0 +1,53 @@
+# Build the site and publish it to GitHub Pages.
+#
+# Pages used to serve a prebuilt page straight off the `under-construction`
+# branch. This repo is a Vite app, so there is nothing servable in the tree
+# itself — `main` holds source, and the built site only exists after
+# `npm run build`. Hence a workflow: push to main, it builds, Pages serves
+# dist/. The custom domain rides along in public/CNAME, which Vite copies
+# into dist/ on every build.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  # So a deploy can be re-run without an empty commit.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; queue instead of cancelling, so a push
+# mid-deploy still ends up published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # Runs typecheck first — the build script chains them, so a type
+      # error fails here rather than shipping.
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
