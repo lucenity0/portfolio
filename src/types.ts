@@ -89,7 +89,7 @@ export interface Command {
 }
 
 /** How a project is presented inside its window. */
-export type ProjectKind = "web" | "ios";
+export type ProjectKind = "web" | "ios" | "mac";
 
 export interface Project {
   /** Slug used by `project <slug>`. */
@@ -115,8 +115,9 @@ export interface Project {
    */
   viewport?: { width: number; height: number };
   /**
-   * Screenshot of the project's site, shown on its card. Projects with
-   * no site leave this unset and get a GitHub mark instead.
+   * Shot of the project on its card — its site, or, for something with
+   * no address to visit, the app itself. A project with neither leaves
+   * this unset and gets a GitHub mark instead.
    */
   thumb?: string;
   tags?: string[];

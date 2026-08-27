@@ -65,9 +65,9 @@ ask me why you should hire me — I've got a real pitch, not just a bio.
 
 ## hire / hiring / why hire / hire him / why hire him / why should we hire him / why should you hire him / why should i hire him / should we hire him / should i hire him / why choose him / worth hiring / strengths / pitch / value proposition / good fit / qualifications / candidate / stand out / availability
 
-Short version: I ship, not just study. Four finished products with real,
-working stacks — Liffy, Askcal, Tiket, and Schedulr — done alongside a full CS
-course load, not class assignments gathering dust in a repo. Liffy and Askcal
+Short version: I ship, not just study. Five finished products with real,
+working stacks — Liffy, Askcal, clockit, Tiket, and Schedulr — done alongside a
+full CS course load, not class assignments gathering dust in a repo. Liffy and Askcal
 are both open source, deployed, and documented end to end on their own landing
 pages: Liffy reviews pull requests by retrieving from a semantic index of the
 whole repository, and Askcal ranks a mailbox by what ignoring it costs, on
@@ -105,12 +105,13 @@ Tools: Git/GitHub, Docker, AWS EC2, Xcode, Figma, Jupyter Notebook, VS Code.
 ## projects / work / portfolio / what has he built / what do you build / apps / what has nafees made / list
 
 The big ones: **Liffy** (an AI code review tool — yes, same name as me),
-**Askcal** (a daily scheduler that ranks your inbox by regret), **Tiket** (a
-ticket booking system), and **Schedulr** (an OS concepts simulator). Liffy and
+**Askcal** (a daily scheduler that ranks your inbox by regret), **clockit** (a
+macOS time tracker that can prove its own hours), **Tiket** (a ticket booking
+system), and **Schedulr** (an OS concepts simulator). Liffy and
 Askcal are both done, open source, and have proper landing pages of their own
 now — liffy.lucenity.dev and askcal.lucenity.dev. Ask about any of them by
 name and I'll go deeper — or ask why you should hire me for the highlight reel
-across all four. There are also two exam-notes sites — ML Notes and BDA
+across all five. There are also two exam-notes sites — ML Notes and BDA
 Notes — built out of his own BMSCE coursework, formulas and solved papers and
 all.
 
@@ -119,8 +120,8 @@ all.
 Graphic Designer at Clearly Blue Pvt Ltd — still affiliated with them on a
 freelance basis. Beyond that, most of the hands-on experience comes from
 research (the hateful-meme and traffic-signal projects), freelance design work
-under Lucenity, and shipping full products end to end (Liffy, Askcal, Tiket,
-Schedulr). Currently prepping for placements and research program applications.
+under Lucenity, and shipping full products end to end (Liffy, Askcal, clockit,
+Tiket, Schedulr). Currently prepping for placements and research program applications.
 
 ## education / study / college / university / school / degree / cgpa / gpa / graduate / graduation
 
@@ -231,6 +232,31 @@ per-model performance analytics, five themes with a customiser, and a help
 page that files its own bug reports. Not built, on purpose: teams and
 organisation accounts, and reviewing anything that isn't a GitHub pull
 request. Source: github.com/lucenity0/Liffy.
+
+## clockit / clock it / time tracker / timer / billable hours / invoice / macos / desk machine
+
+clockit is a macOS time tracker that produces invoice-grade evidence of
+billable hours. It's built as a machine you keep on your desk — a pixel-art
+café playing on a screen sunk into a plastic chassis, with a control deck along
+the bottom carrying every number and every control. The angle is evidence
+rather than counting: most trackers ask you to trust a number, and this one is
+built so the number can be checked. The event log is append-only and
+hash-chained — every clock-in, pause, idle decision and clock-out is appended
+and never edited, and every other table is a cache that can be rebuilt by
+replaying it. There's a Verify Log control that walks the chain end to end, and
+an invoice built from a broken chain says so on its face.
+
+Idle time is deducted, and the deduction is itself part of the record: step
+away and it asks what to do with the time, the answer goes into the log, so an
+invoice can always show what was removed and why. Hours are corroborated by
+which app was frontmost — bundle id and app name only, never screenshots and
+never window titles, because those leak document names, client names and URLs.
+Money is integer paise end to end, never a float. Built on Electron, React,
+TypeScript, SQLite through `node:sqlite`, and AppleScript for the frontmost-app
+sampling and the Apple Music bridge, with 199 tests, shipping as a `.dmg`. The
+whole machine is one picture drawn at a fixed 1000×848 and scaled by a single
+factor, so it's exactly the same shape at every window size — no breakpoints
+anywhere. Source: github.com/lucenity0/clockit-app.
 
 ## tiket / ticket / ticket booking / booking system / seats / concurrency
 

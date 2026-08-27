@@ -56,6 +56,23 @@ a handwritten note stays searchable text. Design is warm ruled paper with a red 
 both themes verified past 4.5:1 contrast rather than assumed. Deployed and running; no account,
 no signup, no tracking.
 
+### clockit — [lucenity0/clockit-app](https://github.com/lucenity0/clockit-app)
+macOS time tracker (Electron, React, TypeScript, SQLite via `node:sqlite`, AppleScript) built
+as a machine you keep on your desk: a pixel-art café playing on a screen sunk into a plastic
+chassis, with a control deck along the bottom carrying every number and every control. The
+point is evidence rather than counting — most trackers ask you to trust a number, this one is
+built so the number can be checked. The event log is append-only and hash-chained: every
+clock-in, pause, idle decision and clock-out is appended and never edited, every other table is
+a cache that can be rebuilt by replaying it, a Verify Log control walks the chain end to end,
+and an invoice built from a broken chain says so on its face. Idle time is deducted and the
+deduction is itself part of the record — step away and it asks what to do with the time, and
+the answer goes into the log, so an invoice can always show what was removed and why. Hours are
+corroborated by which app was frontmost, bundle id and app name only: never screenshots, never
+window titles, because those leak document names, client names and URLs. Money is integer paise
+end to end, never a float. The whole machine is one picture drawn at a fixed 1000×848 and
+scaled by a single factor, so it is the same shape at every window size — no breakpoints
+anywhere. 199 tests; ships as a `.dmg`.
+
 ### Tiket
 Full-stack ticket booking system (SwiftUI, FastAPI, PostgreSQL, AWS EC2, JWT). Handles
 concurrency-safe seat allocation using PostgreSQL `SELECT FOR UPDATE`, deployed on EC2 and

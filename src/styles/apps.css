@@ -487,6 +487,28 @@
   text-align: right;
 }
 
+/* Pictures in a fetched README — a hero shot, or a row of them. Sized
+   to the column and framed like everything else in the window, so a
+   full-colour screenshot lands inside the machine rather than on top
+   of it. */
+.docs .md-figure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  justify-content: center;
+  margin: 0 0 var(--sp-3);
+}
+.docs .md-figure img,
+.docs p > img {
+  flex: 1 1 240px;
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
 .docs .md-pre {
   background: #060606;
   border: 1px solid var(--line);

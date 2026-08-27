@@ -1,17 +1,25 @@
 /* ------------------------------------------------------------------ *
  * projects — the portfolio's project catalogue.
  *
- * Two kinds of entry:
+ * Three kinds of entry:
  *   · it has a site      → `url` is that site, `thumb` is a screenshot
  *                          of it, and the window embeds it live.
  *   · it's only a repo   → `url` is the repo, no `thumb`, and the card
  *                          falls back to a GitHub mark.
+ *   · it's an app        → `url` is the repo (nothing to frame), but the
+ *                          card still gets a `thumb`: a shot of the app
+ *                          itself, since the thing has a face even
+ *                          though it has no address.
  *
- * Screenshots live in public/thumbs/. Re-take one with:
+ * Screenshots live in public/thumbs/. Re-take a *site* one with:
  *   chrome --headless=new --window-size=1280,800 \
  *     --virtual-time-budget=7000 --screenshot=out.png <url>
  *   sips -s format jpeg -s formatOptions 72 -Z 640 out.png \
  *     --out public/thumbs/<slug>.jpg
+ *
+ * An *app* shot is whatever the project publishes of itself, cropped to
+ * 16:9 (the card's ratio) so `object-fit: cover` has nothing left to
+ * crop — a centre-crop of a tall shot eats the part worth showing.
  * ------------------------------------------------------------------ */
 
 import type { Project } from "@/types";
@@ -43,6 +51,17 @@ export const PROJECTS: Project[] = [
     viewport: { width: 1280, height: 800 },
     thumb: `${THUMBS}askcal.jpg`,
     tags: ["ios", "ai", "productivity", "open-source"],
+  },
+  {
+    slug: "clockit",
+    name: "clockit",
+    blurb: "a macOS time tracker built so its hours can be checked — append-only, hash-chained",
+    kind: "mac",
+    url: `${GH}/clockit-app`,
+    repo: `${GH}/clockit-app`,
+    embeddable: false,
+    thumb: `${THUMBS}clockit.jpg`,
+    tags: ["mac", "productivity"],
   },
   {
     slug: "studycafe",
