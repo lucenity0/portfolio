@@ -57,7 +57,8 @@ both themes verified past 4.5:1 contrast rather than assumed. Deployed and runni
 no signup, no tracking.
 
 ### clockit — [lucenity0/clockit-app](https://github.com/lucenity0/clockit-app)
-macOS time tracker (Electron, React, TypeScript, SQLite via `node:sqlite`, AppleScript) built
+Open-source (MIT) macOS time tracker (Electron, React, TypeScript, SQLite via `node:sqlite`,
+AppleScript) built
 as a machine you keep on your desk: a pixel-art café playing on a screen sunk into a plastic
 chassis, with a control deck along the bottom carrying every number and every control. The
 point is evidence rather than counting — most trackers ask you to trust a number, this one is

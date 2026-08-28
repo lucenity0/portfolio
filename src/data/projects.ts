@@ -61,7 +61,7 @@ export const PROJECTS: Project[] = [
     repo: `${GH}/clockit-app`,
     embeddable: false,
     thumb: `${THUMBS}clockit.jpg`,
-    tags: ["mac", "productivity"],
+    tags: ["mac", "productivity", "open-source"],
   },
   {
     slug: "studycafe",

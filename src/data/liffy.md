@@ -256,7 +256,7 @@ TypeScript, SQLite through `node:sqlite`, and AppleScript for the frontmost-app
 sampling and the Apple Music bridge, with 199 tests, shipping as a `.dmg`. The
 whole machine is one picture drawn at a fixed 1000×848 and scaled by a single
 factor, so it's exactly the same shape at every window size — no breakpoints
-anywhere. Source: github.com/lucenity0/clockit-app.
+anywhere. It's open source, MIT. Source: github.com/lucenity0/clockit-app.
 
 ## tiket / ticket / ticket booking / booking system / seats / concurrency
 
